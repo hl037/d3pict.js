@@ -1,0 +1,20 @@
+@import "./example.css";
+:root { color-scheme: light dark; --bg: #fff; --fg: #1b1f24; --muted: #667; --line: #d0d7de; --accent: #2f6fed; --ex-line: var(--line); --ex-accent: var(--accent); --ex-bg: var(--bg); --ex-fg: var(--fg); }
+@media (prefers-color-scheme: dark) { :root { --bg: #14171c; --fg: #e6e8eb; --muted: #9aa; --line: #2c333b; --accent: #6b9bff; } }
+* { box-sizing: border-box; }
+html, body { height: 100%; margin: 0; }
+body { display: grid; grid-template-rows: 100%; grid-template-columns: 220px 1fr; background: var(--bg); color: var(--fg); font: 14px system-ui, sans-serif; }
+aside { border-right: 1px solid var(--line); padding: 16px; overflow: auto; }
+aside h1 { font-size: 16px; margin: 0 0 16px; }
+.group { margin-bottom: 16px; }
+.group h3 { font-size: 12px; text-transform: uppercase; letter-spacing: .05em; color: var(--muted); margin: 0 0 4px; }
+.group a { display: block; padding: 4px 8px; border-radius: 4px; color: inherit; text-decoration: none; }
+.group a:hover { background: color-mix(in srgb, var(--accent) 12%, transparent); }
+.group a.active { background: var(--accent); color: #fff; }
+main { display: flex; flex-direction: column; min-width: 0; min-height: 0; overflow: hidden; padding: 16px 24px; }
+main h2 { margin: 0; font-size: 18px; }
+main p { margin: 4px 0 12px; color: var(--muted); }
+#stage { flex: 1; min-height: 0; display: flex; flex-direction: column; gap: 8px; }
+.langs { display: flex; gap: 4px; margin-top: 8px; }
+.langs a { padding: 2px 8px; border: 1px solid var(--line); border-radius: 4px; color: inherit; text-decoration: none; font-size: 12px; }
+.langs a.active { background: var(--accent); border-color: var(--accent); color: #fff; }

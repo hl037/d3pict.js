@@ -1,0 +1,154 @@
+/** Tiny i18n for the text shown by the examples. English is the default. */
+export type Locale = 'en' | 'fr'
+
+export const messages = {
+  en: {
+    'tool.pan': 'Pan',
+    'tool.zoom-selection': 'Zoom to rectangle',
+    'tool.zoom-click': 'Click to zoom',
+    'tool.wheel-zoom': 'Wheel = zoom',
+    'tool.wheel-pan': 'Wheel = pan',
+    reset: 'Reset',
+    'example.lines.title': 'Lines and areas',
+    'example.lines.description': 'Two time series, an area, a cursor, a tooltip and a clickable legend. The wheel zooms, dragging pans.',
+    'example.tools.title': 'Tools',
+    'example.tools.description': 'Every tool in a toolbox, with mutually exclusive groups and a reset button.',
+    'example.synced.title': 'Synchronized charts',
+    'example.synced.description': 'Two charts share one X axis: zooming or panning one moves the other. One tooltip covers both.',
+    'example.polar.title': 'Cartesian and polar',
+    'example.polar.description':
+      'The same series, renderers, tooltip, cursor and tools; only the axes change. In polar, the angle turns when dragging, the wheel zooms the radius, and the radius axis follows the pointer.',
+    'example.pie.title': 'Pie and donut',
+    'example.pie.description': 'One renderer, no axes. Hover a slice to move it and see its share; click the legend to hide a slice and let the others fill the circle.',
+    'shape.pie': 'Pie',
+    'shape.donut': 'Donut',
+    'example.data.title': 'Adding and removing data',
+    'example.data.description': 'Assign the data of a series: the bars and the line move from what was there to what is there now, and the axes fit the new data.',
+    'example.many.title': 'Many series',
+    'example.many.description': 'Thirty-two series on one chart: the legend under the plot wraps onto as many lines as it needs, then scrolls; the tooltip lists the series in columns.',
+    'example.titles.title': 'Titles and legend',
+    'example.titles.description': 'A title with a subtitle, titles on the axes and a legend under the plot: components to add to the chart, which take their room from the plot.',
+    'example.axes.title': 'Several axes',
+    'example.axes.description': 'Four Y axes (two on each side, one logarithmic) and two X axes on one chart, each series against its own axes. The wheel zooms time, dragging pans.',
+    'example.polarsync.title': 'Cartesian and polar, synchronized',
+    'example.polarsync.description': 'The same data on a cartesian and a polar chart that share their domains: drag the angle on one and the other turns, zoom the magnitude and both zoom. The pointer shows its value on both.',
+    'example.showcase.title': 'Showcase',
+    'example.showcase.description': 'Six charts that combine most features: four Y axes, grouped columns, a rose with a donut, candlesticks synchronized with their volume, a heatmap.',
+    'example.gallery.title': 'Chart types',
+    'example.gallery.description': 'Every chart type of the library, one at a time: pick one in the list. Each is a few objects on a chart; the code of the scenes is below.',
+    'group.cartesian': 'Cartesian',
+    'group.polar': 'Polar',
+    'group.noaxes': 'No axes',
+    'type.curves': 'Curves and gaps',
+    'type.stacked-area': 'Stacked area',
+    'type.percent-area': '100 % stacked area',
+    'type.streamgraph': 'Streamgraph',
+    'type.stacked-column': 'Stacked columns',
+    'type.range-area': 'Range area',
+    'type.histogram': 'Histogram',
+    'type.horizontal-bar': 'Horizontal bars',
+    'type.lollipop': 'Lollipop',
+    'type.waterfall': 'Waterfall',
+    'type.timeline': 'Timeline (range bars)',
+    'type.candlestick': 'Candlestick',
+    'type.boxplot': 'Box plot',
+    'type.dumbbell': 'Dumbbell',
+    'type.bubble': 'Bubble',
+    'type.heatmap': 'Heatmap',
+    'type.slope': 'Slope',
+    'type.annotations': 'Annotations',
+    'type.radar': 'Radar',
+    'type.polar-area': 'Polar area (rose)',
+    'type.radial-bar': 'Radial bars',
+    'type.gauge': 'Gauge',
+    'type.semi-donut': 'Semi-donut',
+    'type.funnel': 'Funnel',
+    'geometry.cartesian': 'Cartesian axes',
+    'geometry.polar': 'Polar axes',
+  },
+  fr: {
+    'tool.pan': 'Déplacer',
+    'tool.zoom-selection': 'Zoom rectangle',
+    'tool.zoom-click': 'Zoom clic',
+    'tool.wheel-zoom': 'Molette = zoom',
+    'tool.wheel-pan': 'Molette = déplacement',
+    reset: 'Réinitialiser',
+    'example.lines.title': 'Lignes et aires',
+    'example.lines.description': 'Deux séries temporelles, aire, curseur, infobulle, légende cliquable, molette = zoom, glisser = déplacer.',
+    'example.tools.title': 'Outils',
+    'example.tools.description': 'Tous les outils dans une boîte à outils, avec groupes d’exclusion mutuelle et réinitialisation.',
+    'example.synced.title': 'Graphiques synchronisés',
+    'example.synced.description': 'Deux graphiques partagent un axe X : zoomer ou déplacer l’un déplace l’autre. Une infobulle couvre les deux.',
+    'example.polar.title': 'Cartésien et polaire',
+    'example.polar.description':
+      'Mêmes séries, rendus, infobulle, curseur et outils ; seuls les axes changent. En polaire, glisser fait tourner l’angle, la molette zoome le rayon, et l’axe du rayon suit le pointeur.',
+    'example.pie.title': 'Camembert et anneau',
+    'example.pie.description': 'Un rendu, pas d’axes. Survolez une part pour la déplacer et voir sa part du total ; cliquez dans la légende pour masquer une part et laisser les autres remplir le cercle.',
+    'shape.pie': 'Camembert',
+    'shape.donut': 'Anneau',
+    'example.data.title': 'Ajouter et retirer des données',
+    'example.data.description': 'Affectez les données d\'une série : les barres et la courbe passent de ce qui était là à ce qui est là maintenant, et les axes s\'ajustent aux nouvelles données.',
+    'example.many.title': 'Beaucoup de séries',
+    'example.many.description': 'Trente-deux séries sur un graphique : la légende sous le tracé passe à la ligne autant qu\'il faut, puis défile ; l\'infobulle liste les séries en colonnes.',
+    'example.titles.title': 'Titres et légende',
+    'example.titles.description': 'Un titre avec un sous-titre, des titres sur les axes et une légende sous le tracé : des composants à ajouter au graphique, qui prennent leur place sur le tracé.',
+    'example.axes.title': 'Plusieurs axes',
+    'example.axes.description': 'Quatre axes Y (deux de chaque côté, un logarithmique) et deux axes X sur un graphique, chaque série selon ses propres axes. La molette zoome le temps, glisser déplace.',
+    'example.polarsync.title': 'Cartésien et polaire, synchronisés',
+    'example.polarsync.description': 'Les mêmes données sur un graphique cartésien et un polaire qui partagent leurs domaines : faites glisser l’angle sur l’un et l’autre tourne, zoomez la magnitude et les deux zooment. Le pointeur montre sa valeur sur les deux.',
+    'example.showcase.title': 'Vitrine',
+    'example.showcase.description': 'Six graphiques qui combinent la plupart des fonctionnalités : quatre axes Y, colonnes groupées, une rose avec un anneau, des chandeliers synchronisés avec leur volume, une carte de chaleur.',
+    'example.gallery.title': 'Types de graphiques',
+    'example.gallery.description': 'Tous les types de graphiques de la bibliothèque, un à la fois : choisissez-en un dans la liste. Chacun n’est que quelques objets sur un graphique ; le code des scènes est plus bas.',
+    'group.cartesian': 'Cartésien',
+    'group.polar': 'Polaire',
+    'group.noaxes': 'Sans axes',
+    'type.curves': 'Courbes et trous',
+    'type.stacked-area': 'Aires empilées',
+    'type.percent-area': 'Aires empilées à 100 %',
+    'type.streamgraph': 'Streamgraph',
+    'type.stacked-column': 'Colonnes empilées',
+    'type.range-area': 'Aire de plage',
+    'type.histogram': 'Histogramme',
+    'type.horizontal-bar': 'Barres horizontales',
+    'type.lollipop': 'Sucettes',
+    'type.waterfall': 'Cascade (waterfall)',
+    'type.timeline': 'Chronologie (barres de plage)',
+    'type.candlestick': 'Chandeliers',
+    'type.boxplot': 'Boîtes à moustaches',
+    'type.dumbbell': 'Haltères (dumbbell)',
+    'type.bubble': 'Bulles',
+    'type.heatmap': 'Carte de chaleur',
+    'type.slope': 'Pentes (slope)',
+    'type.annotations': 'Annotations',
+    'type.radar': 'Radar',
+    'type.polar-area': 'Aire polaire (rose)',
+    'type.radial-bar': 'Barres radiales',
+    'type.gauge': 'Jauge',
+    'type.semi-donut': 'Demi-anneau',
+    'type.funnel': 'Entonnoir (funnel)',
+    'geometry.cartesian': 'Axes cartésiens',
+    'geometry.polar': 'Axes polaires',
+  },
+} as const satisfies Record<Locale, Record<string, string>>
+
+export type MessageKey = keyof (typeof messages)['en']
+
+let current: Locale = 'en'
+
+/** Accepts `fr`, `fr-FR`, … ; anything unknown falls back to English. */
+export function toLocale(tag: string | null | undefined): Locale {
+  return tag?.toLowerCase().startsWith('fr') ? 'fr' : 'en'
+}
+
+export function setLocale(locale: Locale) {
+  current = locale
+}
+
+export function getLocale(): Locale {
+  return current
+}
+
+export function t(key: MessageKey): string {
+  return messages[current][key]
+}

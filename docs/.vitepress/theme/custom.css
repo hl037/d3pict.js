@@ -1,0 +1,28 @@
+/* the example styles read these two variables */
+:root {
+  --ex-line: var(--vp-c-divider);
+  --ex-accent: var(--vp-c-brand-1);
+  --ex-bg: var(--vp-c-bg);
+  --ex-fg: var(--vp-c-text-1);
+}
+/* native controls (the list of a select) follow the theme of the site, not the one of the system */
+:root { color-scheme: light; }
+.dark { color-scheme: dark; }
+
+/* pages with a wide example (the showcase): use the whole width of the window */
+.wide-example .VPDoc .container { max-width: 1440px !important; }
+.wide-example .VPDoc .content-container, .wide-example .VPDoc .content { max-width: none !important; }
+
+/* a step of the guide: what stays is dimmed, what changed is marked */
+.diff-code .has-diff .line:not(.diff) { opacity: 0.5; }
+.diff-code .has-diff .line.diff { position: relative; }
+.diff-code .has-diff .line.diff::before { position: absolute; left: 6px; font-weight: 700; }
+.diff-code .has-diff .line.diff.add { background-color: var(--vp-code-line-diff-add-color, rgba(16, 185, 129, 0.14)); }
+.diff-code .has-diff .line.diff.add::before { content: '+'; color: var(--vp-code-line-diff-add-symbol-color, #18794e); }
+.diff-code .has-diff .line.diff.remove { background-color: var(--vp-code-line-diff-remove-color, rgba(244, 63, 94, 0.14)); }
+.diff-code .has-diff .line.diff.remove::before { content: '−'; color: var(--vp-code-line-diff-remove-symbol-color, #b8272c); }
+.diff-code .diff-fold { margin: 0 -24px; padding: 2px 24px; font-size: 12px; color: var(--vp-c-text-3); background: var(--vp-c-bg-soft); cursor: pointer; user-select: none; }
+.diff-code .diff-fold:hover { color: var(--vp-c-brand-1); }
+/* one line per row, so that a folded line leaves no gap (the newlines between lines are whitespace of a flex container) */
+.diff-code .has-diff code { display: flex; flex-direction: column; }
+.diff-code .has-diff code .line { min-height: 1.5em; }

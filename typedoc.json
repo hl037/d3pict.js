@@ -1,0 +1,45 @@
+{
+  "entryPoints": [
+    "src/index.ts",
+    "src/vue/index.ts",
+    "src/react/index.ts"
+  ],
+  "entryPointStrategy": "resolve",
+  "tsconfig": "tsconfig.json",
+  "plugin": [
+    "typedoc-plugin-markdown",
+    "typedoc-vitepress-theme"
+  ],
+  "out": "docs/api",
+  "docsRoot": "./docs",
+  "readme": "docs/.vitepress/api-readme.md",
+  "name": "D3Pict API",
+  "excludePrivate": true,
+  "excludeProtected": false,
+  "excludeInternal": true,
+  "excludeExternals": true,
+  "skipErrorChecking": true,
+  "hidePageHeader": true,
+  "hideBreadcrumbs": true,
+  "entryFileName": "index",
+  "useCodeBlocks": true,
+  "expandObjects": false,
+  "navigation": {
+    "includeCategories": false,
+    "includeGroups": true
+  },
+  "groupOrder": [
+    "Classes",
+    "Interfaces",
+    "Type Aliases",
+    "Functions",
+    "Variables",
+    "*"
+  ],
+  "sort": [
+    "kind",
+    "alphabetical"
+  ],
+  "gitRevision": "main",
+  "sourceLinkTemplate": "https://github.com/hl037/d3pict.js/blob/{gitRevision}/{path}#L{line}"
+}

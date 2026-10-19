@@ -1,0 +1,9 @@
+node_modules
+dist
+.annotator
+dist-examples
+docs/.vitepress/cache
+docs/.vitepress/dist
+*.ignored*
+test/.generated
+docs/api

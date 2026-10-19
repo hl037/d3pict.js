@@ -1,0 +1,19 @@
+/* Styles of the examples themselves (also used by the documentation site). The host page
+   may set --ex-line and --ex-accent to match its theme. */
+.example-root { display: contents; }
+.chart-host { position: relative; flex: 1 1 0; min-height: 240px; border: 1px solid var(--ex-line, #d0d7de); border-radius: 6px; }
+.chart-host.half { min-height: 160px; }
+.d3pict-chart { position: relative; }
+.toolbar { display: flex; flex-wrap: wrap; gap: 6px; }
+.toolbar button { font: inherit; padding: 4px 10px; border: 1px solid var(--ex-line, #d0d7de); border-radius: 4px; background: transparent; color: inherit; cursor: pointer; }
+.toolbar button.on { background: var(--ex-accent, #2f6fed); border-color: var(--ex-accent, #2f6fed); color: #fff; }
+.ex-tooltip, .ex-legend { font: 12px sans-serif; color: var(--ex-fg, #222); }
+.ex-tooltip { background: var(--ex-bg, #fff); border: 1px solid var(--ex-line, #ccc); border-radius: 4px; padding: 4px 8px; white-space: nowrap; }
+.ex-legend { position: absolute; top: 4px; right: 4px; pointer-events: auto; background: color-mix(in srgb, var(--ex-bg, #fff) 80%, transparent); padding: 2px 6px; border-radius: 4px; }
+.type-select { font: inherit; padding: 4px 8px; border: 1px solid var(--ex-line, #d0d7de); border-radius: 4px; background: var(--ex-bg, Canvas); color: var(--ex-fg, CanvasText); min-width: 220px; }
+/* the list of a native select is drawn by the browser from these, not from the select's own color */
+.type-select option, .type-select optgroup { background: var(--ex-bg, Canvas); color: var(--ex-fg, CanvasText); }
+/* several charts side by side */
+.chart-row, .chart-column { display: flex; gap: 8px; flex: 1 1 0; min-height: 0; }
+.chart-column { flex-direction: column; overflow: auto; }
+.chart-row > div, .chart-column > div { border: 1px solid var(--ex-line, #d0d7de); border-radius: 6px; }
