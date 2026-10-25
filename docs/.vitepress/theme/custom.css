@@ -26,3 +26,10 @@
 /* one line per row, so that a folded line leaves no gap (the newlines between lines are whitespace of a flex container) */
 .diff-code .has-diff code { display: flex; flex-direction: column; }
 .diff-code .has-diff code .line { min-height: 1.5em; }
+
+/* the logo of the navigation bar is wide, with the name in it: give it room */
+.VPNavBarTitle .logo { height: 40px; }
+.VPNavBarTitle .logo { max-width: none; }
+
+/* the logo of the home page is wide: let it use the room of the image column */
+.VPHero .image-src { width: 100%; max-width: 480px; max-height: none; }

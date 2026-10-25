@@ -40,6 +40,11 @@
     "kind",
     "alphabetical"
   ],
-  "gitRevision": "main",
-  "sourceLinkTemplate": "https://github.com/hl037/d3pict.js/blob/{gitRevision}/{path}#L{line}"
+  "gitRevision": "master",
+  "sourceLinkTemplate": "https://github.com/hl037/d3pict.js/blob/{gitRevision}/{path}#L{line}",
+  "validation": {
+    "notExported": false,
+    "invalidLink": true,
+    "notDocumented": false
+  }
 }

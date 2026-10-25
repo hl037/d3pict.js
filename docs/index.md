@@ -4,7 +4,7 @@ hero:
   name: D3Pict
   text: SVG charts, built on d3
   image:
-    src: /favicon.svg
+    src: /logo.svg
     alt: D3Pict
   tagline: "From one line to a polar chart, synchronized charts and your own components. Plain TypeScript, Vue or React."
   actions:

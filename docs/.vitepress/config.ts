@@ -70,17 +70,23 @@ function nav(prefix: string, lang: 'en' | 'fr', t: { guide: string; reference: s
 }
 
 export default defineConfig({
+  base: './',
   title: 'D3Pict',
   cleanUrls: true,
-  // the icon of the tab: the SVG where it is supported, the PNG and the ICO elsewhere
-  head: [
-    ['link', { rel: 'icon', type: 'image/svg+xml', href: '/favicon.svg' }],
-    ['link', { rel: 'icon', type: 'image/png', sizes: '32x32', href: '/favicon-32.png' }],
-    ['link', { rel: 'icon', href: '/favicon.ico', sizes: '32x32' }],
-    ['link', { rel: 'apple-touch-icon', href: '/apple-touch-icon.png' }],
-    ['meta', { property: 'og:image', content: '/logo.png' }],
-  ],
-  themeConfig: { logo: '/favicon.svg' },
+  // the icons of the tab: the SVG where it is supported, the PNG and the ICO elsewhere. The site is built with
+  // relative links so that it works under any path: a page reaches the root of the site by going up one level
+  // for each folder it is in (`guide/hover` is served as `.../guide/hover`, so its icons are at `../`)
+  transformHead({ pageData }) {
+    const up = '../'.repeat(Math.max(0, pageData.relativePath.split('/').length - 1)) || './'
+    return [
+      ['link', { rel: 'icon', type: 'image/svg+xml', href: `${up}favicon.svg` }],
+      ['link', { rel: 'icon', type: 'image/png', sizes: '32x32', href: `${up}favicon-32.png` }],
+      ['link', { rel: 'icon', href: `${up}favicon.ico`, sizes: '32x32' }],
+      ['link', { rel: 'apple-touch-icon', href: `${up}apple-touch-icon.png` }],
+    ]
+  },
+  // the logo carries the name, so the title is not written next to it
+  themeConfig: { logo: '/logo.svg', siteTitle: false },
   // English is the default language (served at the root); French lives under /fr/
   locales: {
     root: {

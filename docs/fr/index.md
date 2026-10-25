@@ -4,7 +4,7 @@ hero:
   name: D3Pict
   text: "Des graphiques SVG, construits sur d3"
   image:
-    src: /favicon.svg
+    src: /logo.svg
     alt: D3Pict
   tagline: "D'une courbe à un graphique polaire, des graphiques synchronisés et vos propres composants. TypeScript pur, Vue ou React."
   actions:

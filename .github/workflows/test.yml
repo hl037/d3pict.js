@@ -1,0 +1,49 @@
+# Tests and builds, on every push and pull request. Written for GitHub Actions and Gitea Actions alike:
+# only `checkout` and `setup-node` are used, and pnpm comes from corepack (the `packageManager` field of package.json).
+# Nothing is published from here.
+name: test
+
+on:
+  push:
+    branches: [master, main]
+  pull_request:
+
+jobs:
+  test:
+    name: typecheck, tests and library build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Enable pnpm
+        run: corepack enable
+      - name: Install
+        run: pnpm install --frozen-lockfile
+      - name: Typecheck
+        run: pnpm typecheck
+      - name: Tests
+        run: pnpm test
+      - name: Build the library
+        run: pnpm build
+      - name: Check what would be published
+        run: npm pack --dry-run
+
+  docs:
+    name: examples and documentation build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Enable pnpm
+        run: corepack enable
+      - name: Install
+        run: pnpm install --frozen-lockfile
+      - name: Build the examples
+        run: pnpm examples:build
+      # generates the API reference first, then builds the site; a dead link fails the build
+      - name: Build the documentation
+        run: pnpm docs:build
