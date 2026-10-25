@@ -1,0 +1,1 @@
+import{X as e,Y as t,lt as n,n as r}from"./chunks/framework.CDweLSlD.js";var i=JSON.parse(`{"title":"API reference","description":"","frontmatter":{},"headers":[],"relativePath":"api/index.md","filePath":"api/index.md"}`),a={name:`api/index.md`};function o(r,i,a,o,s,c){return n(),t(`div`,null,[...i[0]||=[e("",4)]])}var s=r(a,[[`render`,o]]);export{i as __pageData,s as default};
