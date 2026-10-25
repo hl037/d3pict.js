@@ -64,6 +64,10 @@ bus.on(chart.event('mousemove'), (event) => {
 
 Every `projectTo` and `projectFrom` takes an optional `D3PProjectionCache`; the cache is keyed by projector, chart and arguments, so one event serves every chart it is given to. An event is valid until the next redraw: it reads the live state of the chart.
 
+### A pointer that does not move
+
+What is under a still pointer changes when the chart does: a zoom, a resize, a series that gets other data or is hidden. The area then emits `mousemove` again, at the same pixel, with an event of its own (so nothing is kept from the old scale), at most once per frame. The cursor, the markers and the tooltip follow without the pointer moving. A listener that counts `mousemove` events therefore also sees these.
+
 ### Snapshots
 
 A gesture that compares with where it started takes a snapshot instead of keeping the event: `event.snapshot()` returns a `D3PViewSnapshot`, the axes and systems of the chart as they are at that moment (`snapshot.getAxis(axis)` has the frozen `domain`, `scale` and `system`, with the same projections). The pan tool measures every move against the snapshot of its `mousedown`, so it does not drift while it writes the live domain.

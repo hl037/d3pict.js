@@ -32,6 +32,8 @@ export interface D3PInteractionAreaOptions {
 
 interface AreaChartData {
   rect: d3.Selection<SVGRectElement, unknown, null, undefined>
+  /** The last move of the pointer over the chart, while it is still there. */
+  last?: D3PPointerEvent
   stopTracking?: () => void
   dragging: boolean
   start?: D3PViewportPoint
@@ -44,6 +46,10 @@ interface AreaChartData {
  * The only source of mouse events: translates DOM events into chart-addressed events
  * (`chart.event('mousemove')`...), each a {@link D3PPointerEvent} that projects the pointer
  * lazily and once.
+ *
+ * What is under a still pointer changes when the chart does: a zoom, a resize, a series that
+ * gets other data or is hidden. The area then emits `mousemove` again, at the same pixel (at most
+ * once per frame), so that the cursor, the markers and the tooltip follow without the pointer moving.
  */
 export class D3PInteractionArea extends D3PAttachable<AreaChartData> {
   private readonly coalesce: boolean
@@ -105,10 +111,13 @@ export class D3PInteractionArea extends D3PAttachable<AreaChartData> {
     data.rect.on('mousemove', (event: MouseEvent) => {
       if (data.dragging) return
       const [x, y] = d3.pointer(event, node)
-      this.queue(chart, data, new D3PPointerEvent(chart, x, y, event))
+      const move = new D3PPointerEvent(chart, x, y, event)
+      data.last = move
+      this.queue(chart, data, move)
     })
 
     data.rect.on('mouseleave', (event: MouseEvent) => {
+      data.last = undefined
       this.flushPending(chart, data)
       const [x, y] = d3.pointer(event, node)
       chart.emitEvent('mouseleave', new D3PPointerEvent(chart, x, y, event))
@@ -121,7 +130,36 @@ export class D3PInteractionArea extends D3PAttachable<AreaChartData> {
       chart.emitEvent('wheel', new D3PWheelEvent(chart, x, y, event))
     })
 
+    this.watchView(chart, data, subs)
     chart.provide(D3P_INTERACTION_AREA, this)
+  }
+
+  /**
+   * Emit the last move again when what is under the pointer changes: the scale of an axis (zoom, pan,
+   * resize, an auto domain fitting new data), the data of a series, or its visibility.
+   */
+  private watchView(chart: D3PChart, data: AreaChartData, subs: D3PSubscriptions) {
+    const refresh = () => {
+      // a move is already on its way, and it reads the new state
+      if (!data.last || data.dragging || data.pendingMove) return
+      this.queue(chart, data, new D3PPointerEvent(chart, data.last.x, data.last.y, data.last.original))
+    }
+    const watched = new Map<object, () => void>()
+    const sync = () => {
+      const wanted = new Map<object, () => () => void>()
+      const { x, y } = chart.axes.getAxesState()
+      for (const axis of [...x, ...y]) wanted.set(axis, () => this.bus.on(axis.e.scaleChanged, (p) => p.chart === chart && refresh()))
+      for (const renderer of chart.renderers.getSeries()) {
+        wanted.set(renderer, () => this.bus.on(renderer.e.visibilityChanged, refresh))
+        wanted.set(renderer.series, () => this.bus.on(renderer.series.e.dataChanged, refresh))
+      }
+      for (const [key, off] of watched) if (!wanted.has(key)) (off(), watched.delete(key))
+      for (const [key, listen] of wanted) if (!watched.has(key)) watched.set(key, listen())
+    }
+    subs.add(this.bus.on(chart.axes.e.axesListChanged, sync))
+    subs.add(this.bus.on(chart.renderers.e.seriesRendererListChanged, sync))
+    subs.add(() => watched.forEach((off) => off()))
+    sync()
   }
 
   protected override detached(chart: D3PChart, data: AreaChartData): void {

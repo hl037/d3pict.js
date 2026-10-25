@@ -481,3 +481,95 @@ describe('wheel-pan axes', () => {
     void area
   })
 })
+
+describe('what is under a still pointer', () => {
+  /** The moves of the chart, as `[x, y]`, in the order they came. */
+  function moves(chart: D3PChart) {
+    const seen: D3PPointerEvent[] = []
+    bus.on(chart.event('mousemove'), (p) => void seen.push(p))
+    return seen
+  }
+
+  it('is read again when the scale changes: a zoom with the pointer still moves the markers and the tooltip', async () => {
+    const { chart, dx, series, line } = setup()
+    new D3PTooltip({ bus }).addToChart(chart)
+    await settle()
+    const rect = el.querySelector('rect.interaction-area')!
+    const seen = moves(chart)
+    fire(rect, 'mousemove', 160, 120, { buttons: 0 })
+    await settle()
+    expect(seen).toHaveLength(1)
+    const before = el.querySelector('.series-marker')!.getAttribute('cx')
+
+    dx.domain = [2, 6] // a zoom: nothing else happens, the pointer does not move
+    await settle()
+    await new Promise((r) => setTimeout(r, 300))
+    expect(seen).toHaveLength(2)
+    expect([seen[1].x, seen[1].y]).toEqual([seen[0].x, seen[0].y]) // the same pixel
+    expect(seen[1]).not.toBe(seen[0]) // an event of its own: nothing is kept from the old scale
+    expect(el.querySelector('.series-marker')!.getAttribute('cx')).not.toBe(before)
+    expect(line.marker).toBeTruthy()
+    expect(series.data).toHaveLength(3)
+  })
+
+  it('is read again when the data of a series changes, or the series is hidden', async () => {
+    const { chart, series, line } = setup()
+    await settle()
+    const rect = el.querySelector('rect.interaction-area')!
+    const seen = moves(chart)
+    fire(rect, 'mousemove', 160, 120, { buttons: 0 })
+    await settle()
+    series.data = [[0, 10], [5, 60], [10, 90]]
+    await settle()
+    expect(seen).toHaveLength(2)
+    line.visible = false
+    await settle()
+    expect(seen).toHaveLength(3)
+  })
+
+  it('is not read again once the pointer has left the chart', async () => {
+    const { chart, dx } = setup()
+    await settle()
+    const rect = el.querySelector('rect.interaction-area')!
+    const seen = moves(chart)
+    fire(rect, 'mousemove', 160, 120, { buttons: 0 })
+    fire(rect, 'mouseleave', 160, 120, { buttons: 0 })
+    await settle()
+    dx.domain = [2, 6]
+    await settle()
+    expect(seen).toHaveLength(1)
+  })
+
+  it('does not run in a loop: one change gives one more move', async () => {
+    const { chart, dx } = setup()
+    new D3PTooltip({ bus }).addToChart(chart)
+    new D3PCursorIndicator({ bus }).addToChart(chart)
+    await settle()
+    const rect = el.querySelector('rect.interaction-area')!
+    const seen = moves(chart)
+    fire(rect, 'mousemove', 160, 120, { buttons: 0 })
+    await settle()
+    dx.domain = [2, 6]
+    await settle()
+    await new Promise((r) => setTimeout(r, 400))
+    expect(seen).toHaveLength(2)
+  })
+
+  it('merges a burst of changes into one move per frame', async () => {
+    const chart = new D3PChart({ container: el, width: 400, height: 300, bus })
+    const dx = new D3PAxisDomain({ bus, domain: [0, 10] })
+    new D3PAxis({ bus, name: 'x', domain: dx }).addToChart(chart)
+    new D3PAxis({ bus, name: 'y', domain: new D3PAxisDomain({ bus, domain: [0, 100] }), position: 'left' }).addToChart(chart)
+    new D3PInteractionArea({ bus }).addToChart(chart) // the default: bursts are coalesced
+    await settle()
+    const rect = el.querySelector('rect.interaction-area')!
+    const seen = moves(chart)
+    fire(rect, 'mousemove', 160, 120, { buttons: 0 })
+    await new Promise((r) => setTimeout(r, 60))
+    const first = seen.length
+    for (const d of [[1, 9], [2, 8], [3, 7], [4, 6]]) dx.domain = d
+    await settle()
+    await new Promise((r) => setTimeout(r, 60))
+    expect(seen.length - first).toBe(1)
+  })
+})

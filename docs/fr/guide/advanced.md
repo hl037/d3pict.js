@@ -64,6 +64,10 @@ bus.on(chart.event('mousemove'), (event) => {
 
 Tout `projectTo` et `projectFrom` prend un `D3PProjectionCache` optionnel ; le cache est indexé par projecteur, graphique et arguments, donc un événement sert tous les graphiques auxquels il est donné. Un événement est valable jusqu'au prochain redessin : il lit l'état courant du graphique.
 
+### Un pointeur qui ne bouge pas
+
+Ce qu'il y a sous un pointeur immobile change quand le graphique change : un zoom, un redimensionnement, une série qui reçoit d'autres données ou qui est cachée. La zone émet alors de nouveau `mousemove`, au même pixel, avec un événement à elle (donc rien n'est gardé de l'ancienne échelle), au plus une fois par image. Le curseur, les markers et l'infobulle suivent sans que le pointeur bouge. Un écouteur qui compte les `mousemove` voit donc aussi ceux-là.
+
 ### Snapshots
 
 Un geste qui se compare à son point de départ prend un snapshot au lieu de garder l'événement : `event.snapshot()` renvoie un `D3PViewSnapshot`, les axes et systèmes du graphique tels qu'ils sont à cet instant (`snapshot.getAxis(axis)` a le `domain`, l'échelle et le `system` figés, avec les mêmes projections). L'outil de déplacement mesure chaque mouvement contre le snapshot de son `mousedown`, donc il ne dérive pas pendant qu'il écrit le domaine courant.
