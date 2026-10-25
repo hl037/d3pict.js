@@ -162,19 +162,19 @@ function Chart() {
 }
 ```
 
-The components put your own markup in the tooltip, the legend, a slot or an anchor: `D3PVTooltip` and `D3PRTooltip` take a default slot and a children function. See [Vue and React](https://hl037.github.io/d3pict.js/guide/frameworks).
+The components put your own markup in the tooltip, the legend, a slot or an anchor: `D3PVTooltip` and `D3PRTooltip` take a default slot and a children function. See [Vue and React](https://d3pict.dev/guide/frameworks).
 
 ## Chart types
 
-Lines (curves, steps, gaps), areas (stacked, 100 %, streamgraph, ranges), bars (grouped, stacked, horizontal, lollipops, waterfalls, histograms), scatter and bubbles, candlesticks, box plots, dumbbells, heatmaps, slope charts, annotations, pies, donuts and semi-donuts, polar areas, radial bars, radars, gauges and funnels. Each has a page with its code in [the examples](https://hl037.github.io/d3pict.js/examples/gallery), and [the showcase](https://hl037.github.io/d3pict.js/examples/showcase) combines most of them.
+Lines (curves, steps, gaps), areas (stacked, 100 %, streamgraph, ranges), bars (grouped, stacked, horizontal, lollipops, waterfalls, histograms), scatter and bubbles, candlesticks, box plots, dumbbells, heatmaps, slope charts, annotations, pies, donuts and semi-donuts, polar areas, radial bars, radars, gauges and funnels. Each has a page with its code in [the examples](https://d3pict.dev/examples/gallery), and [the showcase](https://d3pict.dev/examples/showcase) combines most of them.
 
 ## Documentation
 
-- [**Guide**](https://hl037.github.io/d3pict.js/guide/getting-started): one chart, built in ten steps, with what changes at each step, for Core, Vue and React.
-- [**Concepts**](https://hl037.github.io/d3pict.js/guide/concepts): the mental model, notion by notion.
-- [**Advanced**](https://hl037.github.io/d3pict.js/guide/advanced): the bus, the services, the render loop, projections, the animation, writing your own components.
-- [**API reference**](https://hl037.github.io/d3pict.js/api/): generated from the source and its comments (`pnpm docs:api`).
-- [**Examples**](https://hl037.github.io/d3pict.js/examples/lines): live, with the code to copy.
+- [**Guide**](https://d3pict.dev/guide/getting-started): one chart, built in ten steps, with what changes at each step, for Core, Vue and React.
+- [**Concepts**](https://d3pict.dev/guide/concepts): the mental model, notion by notion.
+- [**Advanced**](https://d3pict.dev/guide/advanced): the bus, the services, the render loop, projections, the animation, writing your own components.
+- [**API reference**](https://d3pict.dev/api/): generated from the source and its comments (`pnpm docs:api`).
+- [**Examples**](https://d3pict.dev/examples/lines): live, with the code to copy.
 
 ```sh
 pnpm install
