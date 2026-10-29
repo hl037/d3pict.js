@@ -1,1 +1,0 @@
-import{t as e}from"./react.B54jxNxs.js";import{o as t}from"./jsx-runtime.dGJkEGd3.js";var n=e();function r(e){let r=t(),[i,a]=(0,n.useState)();return(0,n.useEffect)(()=>{let t=e(r);return a(t),()=>{t.destroy(),a(void 0)}},[r]),{scenario:i,bus:r}}export{r as t};

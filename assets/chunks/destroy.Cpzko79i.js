@@ -1,0 +1,1 @@
+function e(e){for(let t of e)t.destroy()}export{e as t};

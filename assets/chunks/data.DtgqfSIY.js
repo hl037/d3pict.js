@@ -1,0 +1,1 @@
+function e(e){let t=e>>>0;return()=>(t=t*1664525+1013904223>>>0,t/2**32)}function t(t,n,r,i,a=0,o=100){let s=e(t),c=[],l=r;for(let e=0;e<n;e++)l=Math.min(o,Math.max(a,l+(s()-.5)*i)),c.push(l);return c}function n(e,t=Date.UTC(2026,0,1)){return e.map((e,n)=>[new Date(t+n*6e4),e])}function r(e){return e.map((e,t)=>[t,e])}export{t as i,e as n,n as r,r as t};
