@@ -1,6 +1,6 @@
 {
   "name": "d3pict",
-  "version": "0.1.1",
+  "version": "0.2.0",
   "description": "Depict your data: SVG charts built from objects, on top of d3. Interactive, animated, and yours to extend, in plain TypeScript, Vue or React.",
   "author": "Léo Flaventin Hauchecorne <hl037.prog@gmail.com>",
   "repository": {
