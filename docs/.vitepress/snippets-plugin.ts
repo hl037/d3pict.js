@@ -17,6 +17,11 @@ const FRAMEWORKS: SnippetFramework[] = ['core', 'vue', 'react']
  * A step of the guide: for each framework the code of the step with what changed since the step
  * before (one text with the lines of both, and a character per line telling which is which).
  */
+/** The code of the core version of an example, whole, for the button that opens it in CodePen (base64: it goes in an attribute). */
+function codepenOf(source: (typeof SNIPPETS)[string]): string {
+  return Buffer.from(composeSnippet(source, 'core', true).code, 'utf8').toString('base64')
+}
+
 function guideStep(id: string, n: number, rest: string): string {
   const source = SNIPPETS[id]
   const diffs: Record<string, string> = {}
@@ -27,7 +32,7 @@ function guideStep(id: string, n: number, rest: string): string {
     diffs[fw] = merged.statuses
     return `<template #${fw}-diff>\n\n\`\`\`${lang}\n${merged.text}\n\`\`\`\n\n</template>`
   })
-  return `<ExampleLive id="${id}" :diffs='${JSON.stringify(diffs)}'${rest}>\n${slots.join('\n')}\n</ExampleLive>`
+  return `<ExampleLive id="${id}" codepen="${codepenOf(source)}" :diffs='${JSON.stringify(diffs)}'${rest}>\n${slots.join('\n')}\n</ExampleLive>`
 }
 
 export function d3pictSnippets(): Plugin {
@@ -48,7 +53,7 @@ export function d3pictSnippets(): Plugin {
             return `<template #${fw}-${withData ? 'data' : 'nodata'}>\n\n\`\`\`${lang}\n${code.trimEnd()}\n\`\`\`\n\n</template>`
           }),
         )
-        return `<ExampleLive id="${id}"${rest}>\n${slots.join('\n')}\n</ExampleLive>`
+        return `<ExampleLive id="${id}" codepen="${codepenOf(source)}"${rest}>\n${slots.join('\n')}\n</ExampleLive>`
       })
     },
   }

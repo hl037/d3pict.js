@@ -1,11 +1,10 @@
 <script setup lang="ts">
 import { onBeforeUnmount, ref } from 'vue'
-import { D3PVChart, D3PVLegend, D3PVTooltip, useD3PBus } from 'd3pict/vue'
+import { D3PVChart, D3PVLegend, D3PVTooltip, useD3PContext } from 'd3pict/vue'
 import { createPolarScenario } from '../scenarios/polar'
 
-const bus = useD3PBus()
-const scenario = createPolarScenario(bus)
-onBeforeUnmount(() => scenario.destroy())
+const ctx = useD3PContext()
+const scenario = ctx.destroyLater(createPolarScenario(ctx.bus))
 const { axes, shared, tooltip, legend } = scenario
 
 // #region script

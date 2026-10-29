@@ -2,11 +2,11 @@
  * The React adapter: a provider and the components that mount a chart, its tooltip, its legend and your own content.
  * @module d3pict/react
  */
-import { createContext, createElement, Fragment, useContext, useEffect, useRef, useState, type CSSProperties, type ReactNode } from 'react'
+import { createContext, createElement, Fragment, useContext, useEffect, useMemo, useRef, useState, type CSSProperties, type ReactNode } from 'react'
 import { createPortal } from 'react-dom'
 import {
-  D3PBus, D3PChart, d3pAutoInteractionArea, d3pInit, d3pMergeArray, d3pTooltipText, getGlobalBus,
-  type D3PAnchor, type D3PChartOptions, type D3PLegend, type D3PLegendBundle, type D3PSlot, type D3PTooltip, type D3PTooltipData,
+  D3PBus, D3PChart, d3pAutoInteractionArea, d3pContext, d3pInit, d3pMergeArray, d3pTooltipText, getGlobalBus,
+  type D3PAnchor, type D3PContext, type D3PChartOptions, type D3PLegend, type D3PLegendBundle, type D3PSlot, type D3PTooltip, type D3PTooltipData,
 } from '../index'
 
 /** Anything with `addToChart` / `removeFromChart`. */
@@ -29,6 +29,22 @@ export function D3PRProvider(props: { bus?: D3PBus; children?: ReactNode }): Rea
 /** The bus of the app, from the nearest `D3PRProvider` (the global bus without one). */
 export function useD3PBus(): D3PBus {
   return useContext(BusContext) ?? getGlobalBus()
+}
+
+/**
+ * A context that makes the objects of a chart with the bus of the app (`ctx.newSeries({...})` for
+ * `new D3PSeries({ bus, ... })`, and so on for every object) and destroys them when the component goes away.
+ * `ctx.destroyLater(object)` adds an object you made yourself.
+ *
+ * Make the objects in an effect (`useEffect`), not while rendering: a component can render more than once, and
+ * `StrictMode` mounts, unmounts and mounts it again, which destroys what the first mount made. The context
+ * stays usable after that.
+ */
+export function useD3PContext(): D3PContext {
+  const bus = useD3PBus()
+  const context = useMemo(() => d3pContext(bus), [bus])
+  useEffect(() => () => context.destroy(), [context])
+  return context
 }
 
 /** Re-render the component whenever one of the given bus events is emitted. */

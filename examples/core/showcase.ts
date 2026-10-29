@@ -18,12 +18,21 @@ export function mount(root: HTMLElement) {
   for (const n of sizes) select.append(Object.assign(document.createElement('option'), { value: String(n), textContent: `${n.toLocaleString('en')} points` }))
   bar.append(select)
 
-  const stops = charts.map(({ objects, margin }) => {
-    const container = row.appendChild(document.createElement('div'))
-    container.style.cssText = 'flex: 1; min-width: 0; min-height: 360px' // the charts share the height
+  const stops = charts.map(({ name, objects, margin }) => {
+    const cell = row.appendChild(document.createElement('div'))
+    cell.style.cssText = 'position: relative; flex: 1; min-width: 0; min-height: 360px' // the charts share the height
+    const container = cell.appendChild(document.createElement('div'))
+    container.style.cssText = 'position: absolute; inset: 0'
     const chart = new D3PChart({ container, bus, margin })
     const stopArea = d3pAutoInteractionArea(chart) // before the objects: the tools, cursor and tooltip ask for an interaction area
     objects.forEach((o) => o.addToChart(chart))
+
+    // each chart saves itself as a file: an SVG, or a PNG
+    const save = Object.assign(cell.appendChild(document.createElement('div')), { className: 'toolbar' })
+    save.style.cssText = 'position: absolute; top: 4px; right: 8px; z-index: 2'
+    for (const [label, run] of [['SVG', () => chart.downloadSVG(`${name}.svg`)], ['PNG', () => chart.downloadPNG(`${name}.png`)]] as const) {
+      save.append(Object.assign(document.createElement('button'), { textContent: label, onclick: run }))
+    }
     return () => (stopArea(), chart.destroy())
   })
   const stopTooltip = d3pDomTooltip(tooltip)

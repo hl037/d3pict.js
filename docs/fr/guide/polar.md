@@ -6,8 +6,9 @@ Un graphique polaire dessine les mêmes séries avec un angle et une distance au
 
 Ce qui a changé :
 
-- **Les axes ont d'autres positions.** `position: 'angle'` fait de l'heure un angle, `position: 'radius'` fait de la température une distance au centre. Les domaines, les séries, les rendus, le curseur, l'infobulle, les outils et la légende sont ceux du graphique cartésien.
+- **Les axes ont d'autres positions.** `position: 'angle'` fait de l'heure un angle, `position: 'radius'` fait de la température une distance au centre. Les domaines, les séries, les rendus, le curseur, l'infobulle et la légende sont ceux du graphique cartésien.
 - **L'humidité a disparu,** pour garder un graphique qui se lit bien : un système polaire a un angle et un rayon.
+- **La molette zoome le rayon seulement.** L'outil de zoom reçoit l'axe sur lequel il agit, `axes: ['temperature']` : zoomer un angle coupe le cercle et rend le graphique difficile à lire. Le glisser déplace toujours.
 - Les titres sont contre le disque : celui de l'angle dessous, celui du rayon à sa gauche.
 
 Les rendus ne savent pas dans quelle géométrie ils dessinent. Ils demandent à leur **système de coordonnées** de placer les points : le système cartésien leur donne un rectangle, le polaire un disque.

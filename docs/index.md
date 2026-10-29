@@ -2,11 +2,11 @@
 layout: home
 hero:
   name: D3Pict
-  text: SVG charts, built on d3
+  text: Depict your data.
   image:
     src: /logo.svg
     alt: D3Pict
-  tagline: "From one line to a polar chart, synchronized charts and your own components. Plain TypeScript, Vue or React."
+  tagline: "SVG charts you build from objects, on top of d3. Interactive, animated, and yours to extend, in plain TypeScript, Vue or React."
   actions:
     - theme: brand
       text: Get started
@@ -14,13 +14,20 @@ hero:
     - theme: alt
       text: See the showcase
       link: /examples/showcase
+    - theme: alt
+      text: GitHub
+      link: https://github.com/hl037/d3pict.js
 features:
-  - title: One chart, built up
-    details: "Axes, series and renderers are objects you add to a chart. A line, bars, areas, candlesticks, a heatmap, a pie: the kind of chart is the renderer, and the rest stays."
-  - title: Interactive, and in step
-    details: "Cursor, tooltip, legend, zoom and pan. Charts that share a domain follow each other, a polar chart and a cartesian one included."
-  - title: Core, Vue or React
-    details: "The same objects everywhere. Components for Vue and React mount the chart and render the tooltip, the legend and your own content."
-  - title: Yours to extend
-    details: "Titles and legends are made from public pieces, and so can your components be. Leave out what you do not want."
+  - title: "Five objects make a chart"
+    details: "A series, two axes, a renderer, a chart. Swap the renderer and a line becomes bars, a heatmap or a pie. Everything else is one more object you add, or leave out."
+  - title: "Polar is a change of words"
+    details: "Turn `left` into `radius` and `bottom` into `angle`: the same series, renderer and tooltip now draw a polar chart. Charts whose axes share a domain zoom together, polar or not."
+  - title: "New data just moves"
+    details: "Assign `series.data` and the points glide to their new place. Each point is matched with the one that has the same x, so nothing swaps places."
+  - title: "No private parts"
+    details: "The legend, the titles and the axis titles are made with the pieces you get. Replace one, or write your own the same way."
+  - title: "Plain TypeScript, Vue or React"
+    details: "The same objects everywhere. `useD3PContext()` makes them in a component and destroys them with it."
+  - title: "A file when you need one"
+    details: "Save a chart as an SVG or a PNG, with its fonts, its title and its legend. The cursor and the tooltip stay out of it."
 ---

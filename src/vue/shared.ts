@@ -1,5 +1,5 @@
-import { getCurrentInstance, inject, ref, watch, type InjectionKey } from 'vue'
-import { getGlobalBus, type D3PBus, type D3PChart } from '../index'
+import { getCurrentInstance, getCurrentScope, inject, onScopeDispose, ref, watch, type InjectionKey } from 'vue'
+import { d3pContext, getGlobalBus, type D3PBus, type D3PChart, type D3PContext } from '../index'
 
 /** Anything with `addToChart` / `removeFromChart` / `destroy`. */
 export interface D3PAttachableLike {
@@ -18,6 +18,17 @@ export function useD3PBus(): D3PBus {
   const bus = inject(D3P_BUS_KEY, undefined)
   if (!bus) throw new Error('[d3pict] the D3PVPlugin is not installed on this app')
   return bus
+}
+
+/**
+ * A context that makes the objects of a chart with the bus of the app (`ctx.newSeries({...})` for
+ * `new D3PSeries({ bus, ... })`, and so on for every object) and destroys them when the component goes away.
+ * `ctx.destroyLater(object)` adds an object you made yourself. Call it in `setup()`.
+ */
+export function useD3PContext(): D3PContext {
+  const context = d3pContext(useD3PBus())
+  if (getCurrentScope()) onScopeDispose(() => context.destroy())
+  return context
 }
 
 /** The bus of the current component's app, or `undefined` outside a component / without the plugin. */

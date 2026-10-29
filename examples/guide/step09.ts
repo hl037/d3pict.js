@@ -29,7 +29,8 @@ export function createStep09(bus: D3PBus) {
   // tools act on the domains: drag to pan, wheel to zoom
   const tools = new D3PToolbox({ bus })
   tools.addTool(new D3PPanTool({ bus }))
-  tools.addTool(new D3PWheelZoomTool({ bus }))
+  // zooming an angle would cut the circle: the wheel only zooms the radius, the axis named 'temperature'
+  tools.addTool(new D3PWheelZoomTool({ bus, axes: ['temperature'] }))
   tools.addTool(new D3PResetTool({ bus }))
   for (const name of ['pan', 'wheel-zoom', 'reset']) tools.setToolActive(name)
 

@@ -95,6 +95,14 @@ export const examples: Example[] = [
     },
   },
   {
+    id: 'export',
+    load: {
+      core: async () => (await import('./core/export')).mount,
+      vue: async () => (await import('./vue/mount')).vueMount((await import('./vue/Export.vue')).default),
+      react: async () => (await import('./react/mount')).reactMount((await import('./react/Export')).ExportExample),
+    },
+  },
+  {
     id: 'showcase',
     load: {
       core: async () => (await import('./core/showcase')).mount,

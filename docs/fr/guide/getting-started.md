@@ -2,7 +2,7 @@
 
 D3Pict dessine des graphiques en SVG, au-dessus de [d3](https://d3js.org). Utilisez-le en TypeScript pur, avec Vue ou avec React : le graphique est le même, seules les dernières lignes changent.
 
-Ce guide construit **un seul graphique**, d'une courbe à un graphique polaire dont vous changez les données, en dix étapes. Chaque étape ajoute quelque chose et montre ce qui a changé. [Concepts](/fr/guide/concepts) donne la vue d'ensemble.
+Ce guide construit **un seul graphique**, d'une courbe à un graphique polaire dont vous changez les données et que vous enregistrez en fichier, en onze étapes. Chaque étape ajoute quelque chose et montre ce qui a changé. [Concepts](/fr/guide/concepts) donne la vue d'ensemble.
 
 ## Installer
 

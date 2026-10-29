@@ -6,8 +6,9 @@ A polar chart draws the same series with an angle and a distance from the center
 
 What changed:
 
-- **The axes have other positions.** `position: 'angle'` makes the hour an angle, `position: 'radius'` makes the temperature a distance from the center. The domains, the series, the renderers, the cursor, the tooltip, the tools and the legend are the ones of the cartesian chart.
+- **The axes have other positions.** `position: 'angle'` makes the hour an angle, `position: 'radius'` makes the temperature a distance from the center. The domains, the series, the renderers, the cursor, the tooltip and the legend are the ones of the cartesian chart.
 - **The humidity is gone,** to keep one chart that reads well: a polar system has one angle and one radius.
+- **The wheel zooms the radius only.** The zoom tool is told which axis it acts on, `axes: ['temperature']`: zooming an angle cuts the circle and makes the chart hard to read. Dragging still pans. to keep one chart that reads well: a polar system has one angle and one radius.
 - The titles are against the disc: the angle's under it, the radius's on its left.
 
 The renderers do not know which geometry they draw in. They ask their **coordinate system** to place points: the cartesian system gives them a rectangle, the polar one a disc.

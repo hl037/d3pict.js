@@ -313,14 +313,15 @@ export function createShowcaseScenario(bus: D3PBus) {
   title7.props({ subtitle: `${sizes[0].toLocaleString('en')} points` })
 
   // what goes on each chart, and the margins its axes need
-  const charts: { objects: D3PChartObject[]; margin?: Partial<D3PMargin> }[] = [
-    { objects: [hour, day, yRequests, yCpu, yLatency, yErrors, requestBars, latencyRange, cpuLine, errorDots, deploy, slo, top, title1, titleRequests, titleCpu, titleLatency, titleErrors, legend1, cursor, tooltip, timeTools] },
-    { objects: [quarter, ySales, yMargin, columnsA, columnsB, marginLine, target, title2, titleSales, titleMargin, legend2, cursor, tooltip] },
-    { objects: [donut, month, days, ...rose, pie, title3, titleMonth, titleDays, legend3, cursor, tooltip] },
-    { objects: [date, yPrice, candles, sma, title4, titlePrice, legend4, cursor, tooltip, marketTools] },
-    { objects: [date, yVolume, volumeBars, titleVolume, titleDate, cursor, tooltip, marketTools] },
-    { objects: [hourOfDay, weekday, cells, scale, title6, titleHour, titleWeekday, tooltip], margin: { right: 70 } },
-    { objects: [signalTime, signalValue, signalLine, title7, cursor, tooltip, signalTools] },
+  // `name` is what a chart is saved as: `service-metrics.svg`, `service-metrics.png`
+  const charts: { name: string; objects: D3PChartObject[]; margin?: Partial<D3PMargin> }[] = [
+    { name: 'service-metrics', objects: [hour, day, yRequests, yCpu, yLatency, yErrors, requestBars, latencyRange, cpuLine, errorDots, deploy, slo, top, title1, titleRequests, titleCpu, titleLatency, titleErrors, legend1, cursor, tooltip, timeTools] },
+    { name: 'sales-and-margin', objects: [quarter, ySales, yMargin, columnsA, columnsB, marginLine, target, title2, titleSales, titleMargin, legend2, cursor, tooltip] },
+    { name: 'weather-by-month', objects: [donut, month, days, ...rose, pie, title3, titleMonth, titleDays, legend3, cursor, tooltip] },
+    { name: 'aapl-prices', objects: [date, yPrice, candles, sma, title4, titlePrice, legend4, cursor, tooltip, marketTools] },
+    { name: 'aapl-volume', objects: [date, yVolume, volumeBars, titleVolume, titleDate, cursor, tooltip, marketTools] },
+    { name: 'visits-by-hour-and-day', objects: [hourOfDay, weekday, cells, scale, title6, titleHour, titleWeekday, tooltip], margin: { right: 70 } },
+    { name: 'many-points', objects: [signalTime, signalValue, signalLine, title7, cursor, tooltip, signalTools] },
   ]
   // #endregion chart
 

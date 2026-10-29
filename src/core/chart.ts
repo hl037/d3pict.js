@@ -1,6 +1,7 @@
 import * as d3 from 'd3'
 import { D3PBus, d3pEvent, type D3PEvent } from './bus'
 import { D3PObject, type D3PObjectOptions } from './object'
+import { d3pFontFaceCss } from './export-fonts'
 import { D3PLayout } from './layout'
 import { D3PServiceRegistry, type D3PServiceKey } from './services'
 import { D3PAxisManager, D3P_AXES } from './axis-manager'
@@ -105,6 +106,23 @@ export interface D3PChartLayers {
 }
 
 const DEFAULT_MARGIN: D3PMargin = { top: 20, right: 20, bottom: 40, left: 60 }
+
+/** Options of an export of a chart (`exportSVG`, `downloadSVG`, `exportPNG`, `downloadPNG`). */
+export interface D3PExportOptions {
+  /** The color behind the chart (white by default). `null` leaves it transparent. */
+  background?: string | null
+  /** What `currentColor` is in the file: the text and the lines that follow the color of the page (black by default). Give a light one with a dark `background`. */
+  color?: string
+  /** PNG: the pixels of the image for each pixel of the chart (2 by default). */
+  scale?: number
+  /**
+   * Write the web fonts the chart uses into the file (default true), so that the text looks as it does on screen
+   * wherever the file is opened. The fonts are read from the style sheets of the page, and fetched: a sheet of
+   * another origin that does not allow it is skipped. `false` makes a smaller file whose text uses the fonts
+   * of the machine.
+   */
+  fonts?: boolean
+}
 
 /**
  * A chart: an `svg` in a container, with the margins around its plot, a layout for titles and legends, and the services that objects use (the axes, the renderers, the coordinate systems, the interaction area).
@@ -332,52 +350,84 @@ export class D3PChart extends D3PObject<{ resized: { width: number; height: numb
 
   // ----- exports -----
 
-  /** The chart as the text of an SVG file. */
-  exportSVG(): string {
-    const node = this.getSvg().cloneNode(true) as SVGSVGElement
-    node.setAttribute('xmlns', 'http://www.w3.org/2000/svg')
+  /**
+   * The chart as the text of an SVG file, with what shows on a still chart: the pointer's cursor, markers
+   * and tooltip are left out, and so is the area that takes the pointer. The file does not depend on the
+   * page: it has a background (white unless you say otherwise), a color for the text that follows the
+   * color of the page, and the web fonts the chart uses (see `D3PExportOptions`). The titles and legends,
+   * which are HTML, are part of it.
+   */
+  exportSVG(options: D3PExportOptions = {}): Promise<string> {
+    return this.serialize(options, true)
+  }
+
+  private async serialize(options: D3PExportOptions, withHtml: boolean): Promise<string> {
+    const svg = this.getSvg()
+    const node = svg.cloneNode(true) as SVGSVGElement
+    node.querySelectorAll(EXPORT_LEFT_OUT).forEach((element) => element.remove())
+    if (!withHtml) node.querySelectorAll('foreignObject').forEach((element) => element.remove())
     node.setAttribute('width', String(this.width))
     node.setAttribute('height', String(this.height))
-    node.removeAttribute('style') // layout styling of the live svg
+    // the layout styling of the live svg is not part of the file. What the text inherits from the page is: without it,
+    // the text that does not name a font (the HTML of the titles) would be written with the default one
+    const inherited = INHERITED_TEXT_STYLES.map((name) => [name, getComputedStyle(svg).getPropertyValue(name)] as const).filter(([, value]) => value)
+    node.setAttribute('style', [`color: ${options.color ?? '#000'}`, ...inherited.map(([name, value]) => `${name}: ${value}`)].join('; '))
+    if (options.fonts !== false) {
+      // the fonts are read from the live chart, whose styles are computed; the characters from what stays in the file
+      const css = await d3pFontFaceCss(svg, node.textContent ?? '')
+      if (css) {
+        const style = document.createElementNS('http://www.w3.org/2000/svg', 'style')
+        style.textContent = css
+        node.insertBefore(style, node.firstChild)
+      }
+    }
+    const background = options.background === undefined ? '#fff' : options.background
+    if (background) {
+      const rect = document.createElementNS('http://www.w3.org/2000/svg', 'rect')
+      rect.setAttribute('width', '100%')
+      rect.setAttribute('height', '100%')
+      rect.setAttribute('fill', background)
+      node.insertBefore(rect, node.firstChild)
+    }
     return new XMLSerializer().serializeToString(node)
   }
 
-  /** Saves the chart as an SVG file. The browser downloads it as `filename`. */
-  downloadSVG(filename = 'chart.svg'): void {
-    download(new Blob([this.exportSVG()], { type: 'image/svg+xml;charset=utf-8' }), filename)
+  /** Saves the chart as an SVG file (see `exportSVG`). The browser downloads it as `filename`. */
+  async downloadSVG(filename = 'chart.svg', options: D3PExportOptions = {}): Promise<void> {
+    download(new Blob([await this.exportSVG(options)], { type: 'image/svg+xml;charset=utf-8' }), filename)
   }
 
-  /** Data URL of a PNG rendering of the chart. */
-  exportPNG(scale = 2): Promise<string> {
-    return new Promise((resolve, reject) => {
-      const url = URL.createObjectURL(new Blob([this.exportSVG()], { type: 'image/svg+xml;charset=utf-8' }))
-      const img = new Image()
-      img.onload = () => {
-        const canvas = document.createElement('canvas')
-        canvas.width = this.width * scale
-        canvas.height = this.height * scale
-        const ctx = canvas.getContext('2d')
-        if (!ctx) {
-          URL.revokeObjectURL(url)
-          return reject(new Error('[d3pict] 2D canvas context unavailable'))
-        }
-        ctx.drawImage(img, 0, 0, canvas.width, canvas.height)
-        URL.revokeObjectURL(url)
-        resolve(canvas.toDataURL('image/png'))
-      }
-      img.onerror = () => {
-        URL.revokeObjectURL(url)
-        reject(new Error('[d3pict] failed to load the SVG as an image'))
-      }
-      img.src = url
-    })
+  /**
+   * Data URL of a PNG rendering of the chart (`options.scale` pixels for each pixel of the chart, 2 by default).
+   * A browser that does not let HTML content (titles, legends) into an image, Safari for one, draws the chart
+   * without it, and says so in the console: `exportSVG` keeps it.
+   */
+  async exportPNG(options: D3PExportOptions = {}): Promise<string> {
+    const scale = options.scale ?? 2
+    const draw = async (svg: string) => {
+      // a `data:` URL, not a `blob:` one: with a blob, the canvas cannot be read back when the svg holds HTML
+      const image = await loadImage(`data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}`)
+      const canvas = document.createElement('canvas')
+      canvas.width = this.width * scale
+      canvas.height = this.height * scale
+      const context = canvas.getContext('2d')
+      if (!context) throw new Error('[d3pict] 2D canvas context unavailable')
+      context.drawImage(image, 0, 0, canvas.width, canvas.height)
+      return canvas.toDataURL('image/png')
+    }
+    try {
+      return await draw(await this.serialize(options, true))
+    } catch (error) {
+      if ((error as Error).name !== 'SecurityError') throw error
+      console.warn('[d3pict] this browser does not let HTML (titles, legends) into a PNG: they are left out. exportSVG() keeps them.')
+      return draw(await this.serialize(options, false))
+    }
   }
 
-  /** Saves the chart as a PNG image, `scale` times its size. The browser downloads it as `filename`. */
-  async downloadPNG(filename = 'chart.png', scale = 2): Promise<void> {
-    const dataUrl = await this.exportPNG(scale)
-    const blob = await (await fetch(dataUrl)).blob()
-    download(blob, filename)
+  /** Saves the chart as a PNG image (see `exportPNG`). The browser downloads it as `filename`. */
+  async downloadPNG(filename = 'chart.png', options: D3PExportOptions = {}): Promise<void> {
+    const dataUrl = await this.exportPNG(options)
+    download(await (await fetch(dataUrl)).blob(), filename)
   }
 
   protected override onDestroy(): void {
@@ -386,6 +436,21 @@ export class D3PChart extends D3PObject<{ resized: { width: number; height: numb
     this.svg.remove()
     this.restoreContainerPosition?.()
   }
+}
+
+/** What the text of a chart inherits from the page, and an export has to say itself. */
+const INHERITED_TEXT_STYLES = ['font-family', 'font-size', 'font-style', 'font-weight', 'line-height', 'letter-spacing']
+
+/** What only has a meaning on screen, left out of an export: the area that takes the pointer, the cursor, the markers, the tooltip. */
+const EXPORT_LEFT_OUT = '.interaction-area, .cursor-indicator, .cursor-labels, .layer-markers, [data-d3pict-transient]'
+
+function loadImage(url: string): Promise<HTMLImageElement> {
+  return new Promise((resolve, reject) => {
+    const image = new Image()
+    image.onload = () => resolve(image)
+    image.onerror = () => reject(new Error('[d3pict] failed to load the SVG as an image'))
+    image.src = url
+  })
 }
 
 function download(blob: Blob, filename: string) {

@@ -2,7 +2,7 @@
 
 D3Pict draws charts as SVG, on top of [d3](https://d3js.org). Use it from plain TypeScript, Vue or React: the chart is the same, only the last lines change.
 
-This guide builds **one chart**, from a single line to a polar one whose data you change, in ten steps. Each step adds something and shows what changed. [Concepts](/guide/concepts) gives the whole picture.
+This guide builds **one chart**, from a single line to a polar one whose data you change and that you save as a file, in eleven steps. Each step adds something and shows what changed. [Concepts](/guide/concepts) gives the whole picture.
 
 ## Install
 

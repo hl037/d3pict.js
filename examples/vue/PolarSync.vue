@@ -1,11 +1,9 @@
 <script setup lang="ts">
-import { onBeforeUnmount } from 'vue'
-import { D3PVChart, D3PVLegend, D3PVTooltip, useD3PBus } from 'd3pict/vue'
+import { D3PVChart, D3PVLegend, D3PVTooltip, useD3PContext } from 'd3pict/vue'
 import { createPolarSyncScenario } from '../scenarios/polarsync'
 
-const bus = useD3PBus()
-const scenario = createPolarSyncScenario(bus)
-onBeforeUnmount(() => scenario.destroy())
+const ctx = useD3PContext()
+const scenario = ctx.destroyLater(createPolarSyncScenario(ctx.bus))
 const { charts, tooltip, legend } = scenario
 </script>
 

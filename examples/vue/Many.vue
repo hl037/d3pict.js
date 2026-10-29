@@ -1,11 +1,9 @@
 <script setup lang="ts">
-import { onBeforeUnmount } from 'vue'
-import { D3PVChart, D3PVTooltip, useD3PBus } from 'd3pict/vue'
+import { D3PVChart, D3PVTooltip, useD3PContext } from 'd3pict/vue'
 import { createManyScenario } from '../scenarios/many'
 
-const bus = useD3PBus()
-const scenario = createManyScenario(bus)
-onBeforeUnmount(() => scenario.destroy())
+const ctx = useD3PContext()
+const scenario = ctx.destroyLater(createManyScenario(ctx.bus))
 const { objects, tooltip } = scenario
 </script>
 

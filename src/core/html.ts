@@ -39,6 +39,8 @@ export abstract class D3PHtmlContainer<D = undefined> extends D3PAttachable<D3PH
 
   /** `true`: the foreignObject covers the whole SVG (margins included); `false`: the inner area only. */
   protected abstract readonly fullSvg: boolean
+  /** `true`: only has a meaning while the pointer is there (a tooltip): an export of the chart leaves it out. */
+  protected readonly transient: boolean = false
   /** Gives the `div` its look: its position, its size and what lets the pointer through. */
   protected abstract styleDiv(div: d3.Selection<HTMLDivElement, unknown, null, undefined>): void
 
@@ -46,6 +48,7 @@ export abstract class D3PHtmlContainer<D = undefined> extends D3PAttachable<D3PH
     const fo = this.layerOf(chart.layer)
       .append('foreignObject')
       .attr('class', 'html-container')
+      .attr('data-d3pict-transient', this.transient ? '' : null)
       .attr('x', this.fullSvg ? -chart.margin.left : 0)
       .attr('y', this.fullSvg ? -chart.margin.top : 0)
       .attr('width', '100%')

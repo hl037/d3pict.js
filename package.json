@@ -1,7 +1,7 @@
 {
   "name": "d3pict",
   "version": "0.1.1",
-  "description": "Event-driven SVG charting library built on d3 (async symbol-based event bus).",
+  "description": "Depict your data: SVG charts built from objects, on top of d3. Interactive, animated, and yours to extend, in plain TypeScript, Vue or React.",
   "author": "Léo Flaventin Hauchecorne <hl037.prog@gmail.com>",
   "repository": {
     "type": "git",

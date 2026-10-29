@@ -8,6 +8,7 @@ import { createStep07 } from './step07'
 import { createStep08 } from './step08'
 import { createStep09 } from './step09'
 import { createStep10 } from './step10'
+import { createStep11 } from './step11'
 
 /** The scenarios of the steps of the guide, in order. */
 export const STEPS = [
@@ -21,4 +22,5 @@ export const STEPS = [
   createStep08,
   createStep09,
   createStep10,
+  createStep11,
 ]

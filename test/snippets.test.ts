@@ -7,7 +7,7 @@ import { createRoot } from 'react-dom/client'
 import { afterAll, afterEach, beforeAll, describe, expect, it } from 'vitest'
 import { D3PVPlugin } from '../src/vue'
 import { d3pSettle, getGlobalBus } from '../src'
-import { composeSnippet, type SnippetFramework } from '../examples/snippets/compose'
+import { composeSnippet, withContext, type SnippetFramework } from '../examples/snippets/compose'
 import { SNIPPETS } from '../examples/snippets/manifest'
 
 ;(globalThis as any).IS_REACT_ACT_ENVIRONMENT = false
@@ -19,7 +19,7 @@ import { SNIPPETS } from '../examples/snippets/manifest'
  */
 const DIR = join(import.meta.dirname, '.generated')
 const EXT: Record<SnippetFramework, string> = { core: 'ts', vue: 'vue', react: 'tsx' }
-const CHARTS: Record<string, number> = { lines: 1, tools: 1, synced: 2, polar: 1, pie: 1, axes: 1, polarsync: 2, showcase: 7, titles: 1, many: 1, data: 1 }
+const CHARTS: Record<string, number> = { lines: 1, tools: 1, synced: 2, polar: 1, pie: 1, axes: 1, polarsync: 2, showcase: 7, titles: 1, many: 1, data: 1, export: 1 }
 const charts = (id: string) => CHARTS[id] ?? 1 // the chart types have one
 const file = (id: string, fw: SnippetFramework) => join(DIR, `${id}.${fw}.${EXT[fw]}`)
 const wait = (ms = 40) => new Promise((r) => setTimeout(r, ms))
@@ -92,8 +92,39 @@ describe('the snippets', () => {
 
   it('only imports what it uses', () => {
     const code = composeSnippet(SNIPPETS.pie, 'vue', true).code
-    expect(code).toContain("import { D3PVChart, D3PVLegend, D3PVTooltip, useD3PBus } from 'd3pict/vue'")
+    expect(code).toContain("import { D3PVChart, D3PVLegend, D3PVTooltip, useD3PContext } from 'd3pict/vue'")
     expect(code).not.toContain("from 'd3'")
     expect(code).not.toMatch(/^import .*\bref\b/m)
+  })
+
+  it('makes the objects with the context in Vue and in React, and with `new` in the core', () => {
+    const vue = composeSnippet(SNIPPETS.pie, 'vue', true).code
+    expect(vue).toContain('const ctx = useD3PContext()')
+    expect(vue).toMatch(/ctx\.newSeries\(\{/)
+    expect(vue).not.toMatch(/new D3P\w+\(\{ bus/)
+    expect(vue).not.toContain('onBeforeUnmount') // the context destroys what it made
+    expect(vue).not.toContain('.destroy()')
+
+    const react = composeSnippet(SNIPPETS.pie, 'react', true).code
+    expect(react).toContain('function build(ctx: D3PContext)')
+    expect(react).toContain('const ctx = useD3PContext()')
+    expect(react).toContain('useEffect(() => setScene(build(ctx)), [ctx])')
+    expect(react).toMatch(/import \{[^}]*useD3PContext[^}]*\} from 'd3pict\/react'/)
+    expect(react).toMatch(/import \{[^}]*type D3PContext[^}]*\} from 'd3pict'/)
+    expect(react).not.toMatch(/new D3P\w+\(\{ bus/)
+
+    const core = composeSnippet(SNIPPETS.pie, 'core', true).code
+    expect(core).toMatch(/new D3PSeries\(\{\s*bus,/)
+    expect(core).not.toContain('ctx.')
+  })
+
+  it('turns `new D3PX({ bus, ... })` into `ctx.newX({ ... })`, in one line or in several', () => {
+    expect(withContext("const s = new D3PSeries({ bus, name: 'a', data: [] })")).toBe("const s = ctx.newSeries({ name: 'a', data: [] })")
+    expect(withContext('const c = new D3PCursorIndicator({ bus })')).toBe('const c = ctx.newCursorIndicator()')
+    expect(withContext("const s = new D3PSeries({\n  bus,\n  name: 'a',\n})")).toBe("const s = ctx.newSeries({\n  name: 'a',\n})")
+    expect(withContext('await d3pSettle(bus)')).toBe('await d3pSettle(ctx.bus)')
+    // what does not take a bus stays
+    expect(withContext('new D3PDotMarker(renderer)')).toBe('new D3PDotMarker(renderer)')
+    expect(withContext("mybus.on(x); { bus: 1 }; 'bus'")).toBe("mybus.on(x); { bus: 1 }; 'bus'")
   })
 })

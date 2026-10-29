@@ -2,113 +2,118 @@
   <img src="https://raw.githubusercontent.com/hl037/d3pict.js/master/docs/public/logo.svg" alt="D3Pict" width="420">
 </p>
 
-**SVG charts built on [d3](https://d3js.org).** From one line to a polar chart, synchronized charts and your own components. Plain TypeScript, Vue or React.
+<h1 align="center">Depict your data.</h1>
 
-- **One chart, built from objects.** Axes, series, renderers, tools, a cursor, a tooltip, titles and a legend are objects you attach to a chart. The kind of chart is the renderer: lines, areas, bars, candlesticks, a heatmap, a pie...
-- **Interactive.** Cursor, tooltip, legend, pan, zoom, selection. Charts that share a domain follow each other, a polar chart and a cartesian one included.
-- **Animated.** Assign the data of a series and everything that draws it moves from what was there to what is there now.
-- **Yours to extend.** The titles, the legend and the axes' titles are made of public pieces; so can your components be.
-- **Core, Vue or React.** The same objects everywhere; the adapters mount the chart and render HTML content.
+<p align="center">
+  SVG charts you build from objects, on top of <a href="https://d3js.org">d3</a>.<br>
+  Interactive, animated, and yours to extend, in plain TypeScript, Vue or React.
+</p>
+
+<p align="center">
+  <a href="https://www.npmjs.com/package/d3pict"><img src="https://img.shields.io/npm/v/d3pict?color=4e79a7" alt="npm"></a>
+  <a href="https://github.com/hl037/d3pict.js/actions/workflows/test.yml"><img src="https://github.com/hl037/d3pict.js/actions/workflows/test.yml/badge.svg" alt="tests"></a>
+  <a href="LICENSE"><img src="https://img.shields.io/npm/l/d3pict?color=4e79a7" alt="MIT"></a>
+</p>
+
+<p align="center">
+  <a href="https://d3pict.dev/guide/getting-started"><b>Get started</b></a> ·
+  <a href="https://d3pict.dev/examples/showcase">Showcase</a> ·
+  <a href="https://d3pict.dev/examples/gallery">Chart types</a> ·
+  <a href="https://d3pict.dev/api/">API</a>
+</p>
+
+<p align="center">
+  <img src="https://raw.githubusercontent.com/hl037/d3pict.js/master/docs/public/readme-metrics.png" alt="A time series on four Y axes: bars, a line with a gap, a range and points, with annotations, a title and a legend" width="900">
+</p>
+<p align="center">
+  <img src="https://raw.githubusercontent.com/hl037/d3pict.js/master/docs/public/readme-polar.png" alt="A stacked rose with a donut at its center" width="380">
+</p>
+
+## Why D3Pict
+
+Most chart libraries hand you a finished chart with a few knobs. d3 hands you a blank page. D3Pict sits in between: you assemble a chart from small objects (a series, two axes, a renderer), and everything else, a tooltip, pan and zoom, a legend, a title, is one more object you add. Or don't.
+
+That one idea has some nice consequences:
+
+- **Polar is a change of words.** Turn `position: 'left'` into `'radius'` and `'bottom'` into `'angle'`: the same series, renderer and tooltip now draw a polar chart.
+- **Two charts that zoom together** share one `D3PAxisDomain`. That is the whole API for it, and it works between a cartesian chart and a polar one.
+- **The legend is not special.** Titles, axis titles and legends are built with the same public pieces you get. Replacing one is writing the same thing, not fighting it.
+- **New data just moves.** `series.data = [...series.data, row]`, and the points glide to where they belong. Each point is matched with the one that has the same x, so nothing swaps places.
 
 ## Install
 
 ```sh
-pnpm add d3pict d3        # or npm install, yarn add
+npm install d3pict d3
 ```
 
-`d3` (7.9 or later) is a peer dependency. `vue` (3.5 or later) and `react` (18 or later) are optional: you need one only for `d3pict/vue` or `d3pict/react`.
+`d3` is a peer dependency. `vue` and `react` are optional: you only need them for `d3pict/vue` and `d3pict/react`. No build step? Import from a CDN, as below.
 
-## A chart
+## A first chart
 
-This is the whole of a chart: two series on polar axes, with a cursor, a tooltip, pan and zoom, titles, a legend, and buttons that change the data. Everything is created with a `bus` (the events of the library go through it) and attached to a chart at the end.
+Save this as `chart.html` and open it. Nothing to install.
 
 ```html
-<div id="app" style="height: 420px"></div>
+<div id="app" style="height: 360px"></div>
+
+<script type="module">
+  import { D3PAxis, D3PAxisDomain, D3PChart, D3PLineRenderer, D3PSeries, getGlobalBus } from 'https://esm.sh/d3pict'
+
+  const bus = getGlobalBus() // the channel the objects talk through
+
+  // your data: rows of [x, value]
+  const series = new D3PSeries({ bus, name: 'temperature', data: [[0, 12], [4, 9], [8, 14], [12, 21], [16, 24], [20, 17], [24, 13]] })
+
+  // two axes: each one shows a range of values
+  const x = new D3PAxis({ bus, name: 'hour', domain: new D3PAxisDomain({ bus, domain: [0, 24] }) })
+  const y = new D3PAxis({ bus, name: 'temperature', domain: new D3PAxisDomain({ bus, domain: [0, 30] }), position: 'left' })
+
+  // a renderer draws a series; its style is a prop
+  const line = new D3PLineRenderer({ bus, series, props: { style: { color: '#e15759', curve: 'monotone', strokeWidth: 2.5 } } })
+
+  // a chart shows what you attach to it
+  const chart = new D3PChart({ container: document.getElementById('app'), bus })
+  for (const object of [x, y, line]) object.addToChart(chart)
+</script>
 ```
 
-```ts
-import {
-  D3PAutoDomain, d3pAutoInteractionArea, D3PAxis, D3PAxisDomain, D3PAxisTitle, D3PChart, D3PCursorIndicator,
-  d3pDomTooltip, D3PLegendPanel, D3PLineRenderer, D3PPanTool, D3PPoint, D3PResetTool, D3PSeries, D3PTitle,
-  D3PToolbox, D3PTooltip, D3PWheelZoomTool, getGlobalBus,
-} from 'd3pict'
+That is a chart. [The guide](https://d3pict.dev/guide/getting-started) adds one thing at a time, with the lines that change at each step, and every example on the site has an **Open in CodePen** button.
 
-const bus = getGlobalBus()
-const container = document.getElementById('app')! // any element with a size: the chart fills it
+## Then add what you need
 
-// series: rows of [x, value]
-const temperature = new D3PSeries({ bus, name: 'temperature', data: [[0, 12], [4, 9], [8, 14], [12, 21], [16, 24], [20, 17], [24, 13]] })
-const feelsLike = new D3PSeries({ bus, name: 'feels like', data: [[0, 10], [4, 6], [8, 12], [12, 22], [16, 25], [20, 15], [24, 11]] })
+Everything below is one more object attached to the chart, or one prop on an object.
 
-// domains: the values an axis shows. An auto domain fits them to the data, now and when it changes
-const hours = new D3PAxisDomain({ bus, domain: [0, 24] })
-const degrees = new D3PAxisDomain({ bus, domain: [0, 30] })
-const auto = new D3PAutoDomain({ bus })
-auto.linkSeries(temperature, [hours, degrees])
-auto.linkSeries(feelsLike, [hours, degrees])
+| You want | You add |
+|---|---|
+| A crosshair and a tooltip | `new D3PCursorIndicator({ bus })`, `new D3PTooltip({ bus })` |
+| Pan and zoom | a `D3PToolbox` with a `D3PPanTool` and a `D3PWheelZoomTool` |
+| A title, axis titles, a legend | `D3PTitle`, `D3PAxisTitle`, `D3PLegendPanel` |
+| Several lines | one more `D3PSeries` and one more renderer |
+| Bars, areas, candlesticks, a pie... | another renderer: `D3PBarRenderer`, `D3PAreaRenderer`, `D3PCandlestickRenderer`, `D3PPieRenderer` |
+| A polar chart | `position: 'angle'` and `position: 'radius'` on the axes |
+| Axes that fit the data | a `D3PAutoDomain` linked to the series |
+| New data | `series.data = [...series.data, [28, 15]]`, and the chart animates |
+| Charts that move together | give their axes the same `D3PAxisDomain` |
+| A file | `chart.downloadSVG('chart.svg')`, `chart.downloadPNG('chart.png')` |
 
-// axes read a domain; their position says where they are drawn: the hour is an angle, the temperature a distance from the center
-const x = new D3PAxis({ bus, name: 'hour', domain: hours, position: 'angle', props: { tickCount: 6, tickFormat: (v) => `${Math.round(v)} h`, grid: { enabled: true } } })
-const y = new D3PAxis({ bus, name: 'temperature', domain: degrees, position: 'radius', props: { tickFormat: (v) => `${Math.round(v * 10) / 10} °C`, grid: { enabled: true } } })
+## Vue and React
 
-// one renderer per series; its style is a prop
-const line = new D3PLineRenderer({ bus, series: temperature, props: { style: { color: '#e15759', curve: 'monotone', strokeWidth: 2.5 } } })
-const feelsLine = new D3PLineRenderer({ bus, series: feelsLike, props: { style: { color: '#4e79a7', curve: 'monotone' } } })
+In a component, `useD3PContext()` makes the objects with the bus of the app and destroys them when the component goes away. `ctx.newSeries({ ... })` does what `new D3PSeries({ bus, ... })` does, for every object.
 
-// what the pointer shows: a crosshair and a tooltip
-const cursor = new D3PCursorIndicator({ bus })
-const tooltip = new D3PTooltip({ bus })
+```vue
+<script setup lang="ts">
+import { D3PVChart, useD3PContext } from 'd3pict/vue'
 
-// tools act on the domains: drag to pan, wheel to zoom
-const tools = new D3PToolbox({ bus })
-tools.addTool(new D3PPanTool({ bus }))
-tools.addTool(new D3PWheelZoomTool({ bus }))
-tools.addTool(new D3PResetTool({ bus }))
-for (const name of ['pan', 'wheel-zoom', 'reset']) tools.setToolActive(name)
+const ctx = useD3PContext()
+const series = ctx.newSeries({ name: 'temperature', data: [[0, 12], [4, 9], [8, 14], [12, 21], [16, 24]] })
+const x = ctx.newAxis({ name: 'hour', domain: ctx.newAxisDomain({ domain: [0, 16] }) })
+const y = ctx.newAxis({ name: 'temperature', domain: ctx.newAxisDomain({ domain: [0, 30] }), position: 'left' })
+const objects = [x, y, ctx.newLineRenderer({ series })]
+</script>
 
-// titles and a legend take their room from the plot
-const title = new D3PTitle({ bus, props: { text: 'Temperature', subtitle: 'on 12 June' } })
-const xTitle = new D3PAxisTitle({ bus, axis: x, props: { text: 'hour of the day' } })
-const yTitle = new D3PAxisTitle({ bus, axis: y, props: { text: 'temperature' } })
-const legendPanel = new D3PLegendPanel({ bus, placement: 'bottom' })
-
-// changing the data is assigning the series: the lines move from what was there to what is there now, and the domains fit it
-const next = (series: D3PSeries): D3PPoint => {
-  const last = series.data[series.data.length - 1]
-  return [+last[0] + 4, Math.round(Math.min(30, Math.max(0, last[1] + (Math.random() - 0.5) * 10)))]
-}
-const both = [temperature, feelsLike]
-const actions: Record<string, () => void> = {
-  'add a point': () => both.forEach((series) => (series.data = [...series.data, next(series)])),
-  'remove the last': () => both.forEach((series) => series.data.length > 2 && (series.data = series.data.slice(0, -1))),
-  'remove the first': () => both.forEach((series) => series.data.length > 2 && (series.data = series.data.slice(1))),
-}
-const toolbar = document.createElement('div')
-container.before(toolbar)
-for (const [name, run] of Object.entries(actions)) toolbar.append(Object.assign(document.createElement('button'), { textContent: name, onclick: run }))
-
-// the chart: attach everything to it
-const chart = new D3PChart({ container, bus })
-const stopArea = d3pAutoInteractionArea(chart) // before the objects: the cursor, the tooltip and the tools ask for an interaction area
-const objects = [x, y, line, feelsLine, cursor, tooltip, tools, title, xTitle, yTitle, legendPanel]
-objects.forEach((o) => o.addToChart(chart))
-const stopTooltip = d3pDomTooltip(tooltip) // the tooltip as HTML, positioned by the library
+<template>
+  <div style="height: 360px"><D3PVChart :objects="objects" /></div>
+</template>
 ```
-
-When the page goes away, release what you created: `stopTooltip()`, `stopArea()`, `chart.destroy()`, then `destroy()` on each object.
-
-### What each part does
-
-- **Series** hold the rows. A row is `[x, value, ...more columns]`; a series also takes numbers, objects (`fields`), columns, any iterable. Assign `series.data` to change it.
-- **Domains** are the values an axis covers. They are objects of their own, so axes of several charts can share one: the charts then zoom and pan together. `D3PAutoDomain` fits domains to series.
-- **Axes** have a name, a domain, a position (`bottom`, `top`, `left`, `right`, or `angle` and `radius`), a scale type (`linear`, `log`, `time`, `band`...) and props (ticks, format, grid). Several axes can share a side (`offset`).
-- **Renderers** draw a series against axes: `D3PLineRenderer`, `D3PAreaRenderer`, `D3PBarRenderer`, `D3PScatterRenderer`, `D3PPieRenderer`, `D3PCandlestickRenderer`... Their `props` are live: change one and the chart draws again.
-- **Cursor, tooltip and legend** read what is under the pointer through the axes. Pointer values are *not* ticks: round them in `tickFormat`.
-- **Tools** (`D3PPanTool`, `D3PWheelZoomTool`, `D3PZoomSelectionTool`, `D3PResetTool`...) change the domains, in a toolbox where some can exclude others.
-- **Titles and legends** take their room from the plot, through the layout of the chart (`chart.layout`). They are made of the same public pieces (`D3PSlot`, bands) your own components would use, and none is there unless you attach it.
-- **Cartesian or polar** is a matter of axis positions: replace `position: 'angle'` and `'radius'` by nothing (the default `bottom`) and `'left'`, and the same chart is cartesian. Several systems can live in one chart, or in two charts that share a domain.
-
-## Vue
 
 ```ts
 import { createApp } from 'vue'
@@ -117,74 +122,50 @@ import { D3PVPlugin } from 'd3pict/vue'
 createApp(App).use(D3PVPlugin) // the app gets a bus of its own
 ```
 
-```vue
-<script setup lang="ts">
-import { onBeforeUnmount } from 'vue'
-import { D3PVChart, D3PVTooltip, useD3PBus } from 'd3pict/vue'
-
-const bus = useD3PBus()
-// ... create the series, axes, renderers and tooltip with `bus`, as above, then list them in `objects`
-onBeforeUnmount(() => objects.forEach((o) => o.destroy()))
-</script>
-
-<template>
-  <div style="height: 420px">
-    <D3PVChart :objects="objects" />
-  </div>
-  <D3PVTooltip :tooltip="tooltip" />
-</template>
-```
-
-## React
-
 ```tsx
 import { useEffect, useState } from 'react'
-import type { D3PChartObject, D3PTooltip } from 'd3pict'
-import { D3PRChart, D3PRTooltip, useD3PBus } from 'd3pict/react'
+import type { D3PChartObject, D3PContext } from 'd3pict'
+import { D3PRChart, useD3PContext } from 'd3pict/react'
 
-function Chart() {
-  const bus = useD3PBus()
-  const [scene, setScene] = useState<{ objects: D3PChartObject[]; tooltip: D3PTooltip; destroy(): void }>()
-  useEffect(() => {
-    const created = build(bus) // create the objects, as above
-    setScene(created)
-    return () => created.destroy()
-  }, [bus])
-  if (!scene) return null
-  return (
-    <>
-      <div style={{ height: 420 }}>
-        <D3PRChart objects={scene.objects} />
-      </div>
-      <D3PRTooltip tooltip={scene.tooltip} />
-    </>
-  )
+function build(ctx: D3PContext): D3PChartObject[] {
+  const series = ctx.newSeries({ name: 'temperature', data: [[0, 12], [4, 9], [8, 14], [12, 21], [16, 24]] })
+  const x = ctx.newAxis({ name: 'hour', domain: ctx.newAxisDomain({ domain: [0, 16] }) })
+  const y = ctx.newAxis({ name: 'temperature', domain: ctx.newAxisDomain({ domain: [0, 30] }), position: 'left' })
+  return [x, y, ctx.newLineRenderer({ series })]
+}
+
+export function Chart() {
+  const ctx = useD3PContext()
+  const [objects, setObjects] = useState<D3PChartObject[]>()
+  useEffect(() => setObjects(build(ctx)), [ctx]) // make the objects in an effect, not while rendering
+  return objects && <div style={{ height: 360 }}><D3PRChart objects={objects} /></div>
 }
 ```
 
-The components put your own markup in the tooltip, the legend, a slot or an anchor: `D3PVTooltip` and `D3PRTooltip` take a default slot and a children function. See [Vue and React](https://d3pict.dev/guide/frameworks).
+The components `D3PVTooltip` and `D3PRTooltip` (and the legend, slot and anchor ones) put your own markup in the tooltip, the legend or anywhere on the chart. See [Vue and React](https://d3pict.dev/guide/frameworks).
 
 ## Chart types
 
-Lines (curves, steps, gaps), areas (stacked, 100 %, streamgraph, ranges), bars (grouped, stacked, horizontal, lollipops, waterfalls, histograms), scatter and bubbles, candlesticks, box plots, dumbbells, heatmaps, slope charts, annotations, pies, donuts and semi-donuts, polar areas, radial bars, radars, gauges and funnels. Each has a page with its code in [the examples](https://d3pict.dev/examples/gallery), and [the showcase](https://d3pict.dev/examples/showcase) combines most of them.
+Lines (curves, steps, gaps), areas (stacked, 100 %, streamgraph, ranges), bars (grouped, stacked, horizontal, lollipops, waterfalls, histograms), scatter and bubbles, candlesticks, box plots, dumbbells, heatmaps, slope charts, annotations, pies, donuts and semi-donuts, polar areas, radial bars, radars, gauges and funnels. Each has a page with its code in [the examples](https://d3pict.dev/examples/gallery), and [the showcase](https://d3pict.dev/examples/showcase) puts most of them side by side.
 
 ## Documentation
 
-- [**Guide**](https://d3pict.dev/guide/getting-started): one chart, built in ten steps, with what changes at each step, for Core, Vue and React.
+- [**Guide**](https://d3pict.dev/guide/getting-started): one chart, built in eleven steps, with what changes at each step, for Core, Vue and React.
 - [**Concepts**](https://d3pict.dev/guide/concepts): the mental model, notion by notion.
 - [**Advanced**](https://d3pict.dev/guide/advanced): the bus, the services, the render loop, projections, the animation, writing your own components.
-- [**API reference**](https://d3pict.dev/api/): generated from the source and its comments (`pnpm docs:api`).
+- [**API reference**](https://d3pict.dev/api/): generated from the source and its comments.
 - [**Examples**](https://d3pict.dev/examples/lines): live, with the code to copy.
+
+Working on D3Pict itself:
 
 ```sh
 pnpm install
-pnpm docs:dev       # the documentation site, with the API reference generated first
-pnpm examples       # the examples app
 pnpm test           # the tests
 pnpm typecheck
 pnpm build          # the library, in dist/
+pnpm docs:dev       # the documentation site, with the API reference generated first
 ```
 
 ## License
 
-MIT
+[MIT](LICENSE)

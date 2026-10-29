@@ -1,12 +1,11 @@
 <script setup lang="ts">
-import { onBeforeUnmount } from 'vue'
-import { D3PVChart, D3PVLegend, D3PVTooltip, useD3PBus } from 'd3pict/vue'
+import { D3PVChart, D3PVLegend, D3PVTooltip, useD3PContext } from 'd3pict/vue'
 import { GALLERY } from '../scenarios/gallery'
 
 /** The chart of one scene of the gallery. */
 const props = defineProps<{ id: string }>()
-const scene = GALLERY.find((g) => g.id === props.id)!.build(useD3PBus())
-onBeforeUnmount(() => scene.destroy())
+const ctx = useD3PContext()
+const scene = ctx.destroyLater(GALLERY.find((g) => g.id === props.id)!.build(ctx.bus))
 </script>
 
 <template>

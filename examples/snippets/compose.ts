@@ -137,7 +137,7 @@ function dataParts(needs: Needs, withData: boolean): DataParts {
 // Imports
 // ---------------------------------------------------------------------------
 
-const TYPES = new Set(['D3PBus', 'D3PStackOffset', 'D3PStackOrder'])
+const TYPES = new Set(['D3PBus', 'D3PContext', 'D3PStackOffset', 'D3PStackOrder'])
 
 function importLine(names: string[], from: string): string {
   const items = [...new Set(names)].sort((a, b) => a.localeCompare(b)).map((n) => (TYPES.has(n) ? `type ${n}` : n))
@@ -160,9 +160,9 @@ function importsFor(source: string, fw: SnippetFramework): string {
   const lib: string[] = []
   const vue: string[] = []
   const react: string[] = []
-  for (const m of code.matchAll(/(?<![\w$.])(D3P\w+|d3p\w+|getGlobalBus|useD3PBus)(?![\w$])/g)) {
+  for (const m of code.matchAll(/(?<![\w$.])(D3P\w+|d3p\w+|getGlobalBus|useD3PBus|useD3PContext)(?![\w$])/g)) {
     const n = m[1]
-    if (n === 'useD3PBus') (fw === 'vue' ? vue : react).push(n)
+    if (n === 'useD3PBus' || n === 'useD3PContext') (fw === 'vue' ? vue : react).push(n)
     else if (/^D3PV[A-Z]/.test(n) && fw === 'vue') vue.push(n)
     else if (/^D3PR[A-Z]/.test(n) && fw === 'react') react.push(n)
     else lib.push(n)
@@ -170,7 +170,7 @@ function importsFor(source: string, fw: SnippetFramework): string {
   const out: string[] = []
   if (/(?<![\w$.])d3\./.test(code)) out.push("import * as d3 from 'd3'")
   if (fw === 'vue') {
-    const hooks = ['onBeforeUnmount', 'reactive', 'ref', 'computed'].filter((h) => new RegExp(`(?<![\\w$.])${h}\\s*[<(]`).test(code))
+    const hooks = ['onBeforeUnmount', 'reactive', 'ref', 'computed', 'shallowRef'].filter((h) => new RegExp(`(?<![\\w$.])${h}\\s*[<(]`).test(code))
     if (hooks.length) out.push(importLine(hooks, 'vue'))
   }
   if (fw === 'react') {
@@ -184,25 +184,21 @@ function importsFor(source: string, fw: SnippetFramework): string {
 }
 
 // ---------------------------------------------------------------------------
-// What to release
+// The context of Vue and React
 // ---------------------------------------------------------------------------
 
-/** Expressions listing everything the chart code created, to destroy it when the page or component goes away. */
-function createdList(chart: string): string[] {
-  const out: string[] = []
-  // top-level statements: `const name = ...` up to the next line that starts a new one
-  const statements = chart.split(/\n(?=const |let |for |[a-z]\w*[.(])/)
-  for (const statement of statements) {
-    const m = statement.match(/^const (\w+)(?::[^=]+)? = ([\s\S]*)$/)
-    if (!m || !/new D3P/.test(m[2])) continue
-    if (/^new D3P\w+\(/.test(m[2])) out.push(m[1])
-    else if (m[2].startsWith('{')) out.push(`...Object.values(${m[1]}).flat()`)
-    else out.push(`...${m[1]}`)
-  }
-  return [...new Set(out)]
+/**
+ * The scenarios make their objects like the core does: `new D3PSeries({ bus, ... })`. In Vue and in React the
+ * context does it, with the bus given once, and destroys the objects when the component goes away: `ctx.newSeries({ ... })`.
+ * What is left of `bus` (`d3pSettle(bus)`) is the bus of the context.
+ */
+export function withContext(code: string): string {
+  return code
+    .replace(/new D3P(\w+)\(\{ bus \}\)/g, 'ctx.new$1()')
+    .replace(/new D3P(\w+)\(\{ bus, /g, 'ctx.new$1({ ')
+    .replace(/new D3P(\w+)\(\{\n(\s*)bus,\n/g, 'ctx.new$1({\n')
+    .replace(/(?<![\w$.'])bus(?![\w$:'])/g, 'ctx.bus')
 }
-
-const destroyAll = (list: string[]) => `[${list.join(', ')}].forEach((o) => o.destroy())`
 
 // ---------------------------------------------------------------------------
 // The three frameworks
@@ -234,29 +230,38 @@ function standardGlue(chart: string): Record<SnippetFramework, Glue> {
   const tooltip = defined('tooltip')
   const legend = defined('legend')
   const actions = defined('actions')
-  const names = ['objects', margin && 'margin', tooltip && 'tooltip', legend && 'legend', actions && 'actions'].filter(Boolean).join(', ')
+  // the name of the files the chart is saved as: two buttons, SVG and PNG
+  const save = defined('fileName')
+  const toolbar = actions || save
+  const names = ['objects', margin && 'margin', tooltip && 'tooltip', legend && 'legend', actions && 'actions', save && 'fileName'].filter(Boolean).join(', ')
   // what is driven by the pointer needs an interaction area; a chart that only draws does not
   const pointer = /D3P(CursorIndicator|Tooltip|Toolbox|PanTool|WheelZoomTool|WheelPanTool|ClickZoomTool|ZoomSelectionTool|ResetTool|CursorRadiusAxisRenderer)/.test(chart)
   return {
     core: {
       mount: [
-        actions && "const toolbar = document.createElement('div')\ncontainer.before(toolbar)\n// a button for each way to change the data\nfor (const [name, run] of Object.entries(actions)) toolbar.append(Object.assign(document.createElement('button'), { textContent: name, onclick: run }))\n",
+        toolbar && "const toolbar = document.createElement('div')\ncontainer.before(toolbar)",
+        actions && "// a button for each way to change the data\nfor (const [name, run] of Object.entries(actions)) toolbar.append(Object.assign(document.createElement('button'), { textContent: name, onclick: run }))",
+        toolbar && '',
         `const chart = new D3PChart({ container, bus${margin ? ', margin' : ''} })`,
         pointer && 'const stopArea = d3pAutoInteractionArea(chart) // before the objects: the cursor, the tooltip and the tools ask for an interaction area',
         'objects.forEach((o) => o.addToChart(chart))',
         tooltip && 'const stopTooltip = d3pDomTooltip(tooltip)',
         legend && 'const stopLegend = d3pDomLegend(legend)',
+        save && "\n// the chart as a file: an SVG, or a PNG\nfor (const [label, run] of [['save SVG', () => chart.downloadSVG(`${fileName}.svg`)], ['save PNG', () => chart.downloadPNG(`${fileName}.png`)]] as const) {\n  toolbar.append(Object.assign(document.createElement('button'), { textContent: label, onclick: run }))\n}",
       ]
-        .filter(Boolean)
+        .filter((line) => line !== undefined && line !== false && line !== null)
         .join('\n'),
     },
     vue: {
+      script: save ? '// the chart, once it is created: it saves itself as a file\nconst chart = shallowRef<D3PChart>()' : undefined,
       template: [
-        actions && '<div class="toolbar">',
+        toolbar && '<div class="toolbar">',
         actions && '  <button v-for="(run, name) in actions" :key="name" @click="run()">{{ name }}</button>',
-        actions && '</div>',
+        save && '  <button :disabled="!chart" @click="chart?.downloadSVG(`${fileName}.svg`)">save SVG</button>',
+        save && '  <button :disabled="!chart" @click="chart?.downloadPNG(`${fileName}.png`)">save PNG</button>',
+        toolbar && '</div>',
         '<div class="chart-host">',
-        `  <D3PVChart :objects="objects"${margin ? ' :margin="margin"' : ''} />`,
+        `  <D3PVChart :objects="objects"${margin ? ' :margin="margin"' : ''}${save ? ' @ready="chart = $event"' : ''} />`,
         '</div>',
         legend && '<D3PVLegend :legend="legend" />',
         tooltip && '<D3PVTooltip :tooltip="tooltip" />',
@@ -267,17 +272,24 @@ function standardGlue(chart: string): Record<SnippetFramework, Glue> {
     react: {
       names,
       view: [
+        save && '// the chart, once it is created: it saves itself as a file\nconst [chart, setChart] = useState<D3PChart>()',
         'return (',
         '  <>',
-        actions && '    <div className="toolbar">',
+        toolbar && '    <div className="toolbar">',
         actions && '      {Object.entries(actions).map(([name, run]) => (',
         actions && '        <button key={name} onClick={run}>',
         actions && '          {name}',
         actions && '        </button>',
         actions && '      ))}',
-        actions && '    </div>',
+        save && '      <button disabled={!chart} onClick={() => chart?.downloadSVG(`${fileName}.svg`)}>',
+        save && '        save SVG',
+        save && '      </button>',
+        save && '      <button disabled={!chart} onClick={() => chart?.downloadPNG(`${fileName}.png`)}>',
+        save && '        save PNG',
+        save && '      </button>',
+        toolbar && '    </div>',
         '    <div className="chart-host">',
-        `      <D3PRChart objects={objects}${margin ? ' margin={margin}' : ''} />`,
+        `      <D3PRChart objects={objects}${margin ? ' margin={margin}' : ''}${save ? ' onReady={setChart}' : ''} />`,
         '    </div>',
         legend && '    <D3PRLegend legend={legend} />',
         tooltip && '    <D3PRTooltip tooltip={tooltip} />',
@@ -312,13 +324,11 @@ function core(chart: string, glue: Glue, data: DataParts): string {
 function vue(chart: string, glue: Glue, data: DataParts): string {
   const script = glue.script
   const template = glue.template!
-  const list = createdList(chart)
   const body = [
     data.code,
-    'const bus = useD3PBus() // the app installs the plugin: app.use(D3PVPlugin)',
-    chart,
+    '// the objects made with the context are destroyed when the component goes away (the app installs the plugin: app.use(D3PVPlugin))\nconst ctx = useD3PContext()',
+    withContext(chart),
     script ?? '',
-    `// release everything the chart created when the component goes away\nonBeforeUnmount(() => ${destroyAll(list)})`,
   ]
     .filter(Boolean)
     .join('\n\n')
@@ -329,19 +339,15 @@ function vue(chart: string, glue: Glue, data: DataParts): string {
 function react(chart: string, glue: Glue, data: DataParts): string {
   const view = glue.view!
   const names = glue.names!
-  const list = createdList(chart)
   const body = [
     data.code,
-    `function build(bus: D3PBus) {\n${indent(chart, '  ')}\n\n  return { ${names}, destroy: () => ${destroyAll(list)} }\n}`,
+    `function build(ctx: D3PContext) {\n${indent(withContext(chart), '  ')}\n\n  return { ${names} }\n}`,
     `export function Example() {
-  const bus = useD3PBus()
+  // the objects made with the context are destroyed when the component goes away
+  const ctx = useD3PContext()
   const [scene, setScene] = useState<ReturnType<typeof build>>()
-  // create the objects once mounted, and destroy them on unmount
-  useEffect(() => {
-    const created = build(bus)
-    setScene(created)
-    return () => created.destroy()
-  }, [bus])
+  // make the objects once mounted, not while rendering: a component can render twice
+  useEffect(() => setScene(build(ctx)), [ctx])
   return scene && <View scene={scene} />
 }`,
     `function View({ scene: { ${names} } }: { scene: ReturnType<typeof build> }) {\n${indent(view, '  ')}\n}`,

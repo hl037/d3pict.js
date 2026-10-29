@@ -3,7 +3,7 @@ import {
   D3PAnchor, D3PAxis, D3PAxisDomain, D3PBarRenderer, D3PBus, D3PChart, D3PClickZoomTool, D3PCursorIndicator, D3PInteractionArea,
   D3PLegendBundle, D3PLineRenderer, D3PPanTool, D3PPassiveZoomTool, D3PResetTool, D3PSeries, D3PTooltip, D3PToolbox,
   D3PWheelPanTool, D3PWheelZoomTool, D3PZoomSelectionTool, D3PAutoDomain, D3P_INTERACTION_AREA, d3pSettle,
-  D3PPointerEvent, D3PWheelEvent,
+  D3PPointerEvent, D3PTitle, D3PWheelEvent,
 } from '../src'
 import { valuesAt } from './helpers'
 
@@ -143,9 +143,9 @@ describe('chart structure and rendering', () => {
     expect(line.getCharts()).toEqual([])
   })
 
-  it('exports the SVG', () => {
+  it('exports the SVG', async () => {
     const { chart } = setup()
-    expect(chart.exportSVG()).toContain('xmlns="http://www.w3.org/2000/svg"')
+    expect(await chart.exportSVG()).toContain('xmlns="http://www.w3.org/2000/svg"')
   })
 
   it('draws bars on a band scale and groups them', async () => {
@@ -166,13 +166,13 @@ describe('chart structure and rendering', () => {
 })
 
 describe('svg and container sizing', () => {
-  it('never lets an automatic chart size its own container (no endless growth)', () => {
+  it('never lets an automatic chart size its own container (no endless growth)', async () => {
     const chart = new D3PChart({ container: el, bus })
     const svg = el.querySelector('svg')!
     expect(svg.style.display).toBe('block')
     expect(svg.style.position).toBe('absolute')
     expect(el.style.position).toBe('relative')
-    expect(chart.exportSVG()).not.toContain('position')
+    expect(await chart.exportSVG()).not.toContain('position')
     chart.destroy()
     expect(el.style.position).toBe('')
   })
@@ -571,5 +571,154 @@ describe('what is under a still pointer', () => {
     await settle()
     await new Promise((r) => setTimeout(r, 60))
     expect(seen.length - first).toBe(1)
+  })
+})
+
+describe('exports of a chart', () => {
+  const rects = (svg: string) => [...new DOMParser().parseFromString(svg, 'image/svg+xml').querySelectorAll('svg > rect')]
+
+  it('has a background and a text color of its own, so that the file does not depend on the page', async () => {
+    const { chart } = setup()
+    const doc = new DOMParser().parseFromString(await chart.exportSVG(), 'image/svg+xml')
+    const svg = doc.documentElement
+    expect(svg.getAttribute('style')).toMatch(/^color: #000(;|$)/)
+    const first = svg.querySelector(':scope > rect')!
+    expect(first.getAttribute('fill')).toBe('#fff')
+    expect(first.getAttribute('width')).toBe('100%')
+    expect(svg.getAttribute('width')).toBe('400')
+
+    const dark = new DOMParser().parseFromString(await chart.exportSVG({ background: '#111', color: '#eee' }), 'image/svg+xml').documentElement
+    expect(dark.getAttribute('style')).toMatch(/^color: #eee(;|$)/)
+    expect(dark.querySelector(':scope > rect')!.getAttribute('fill')).toBe('#111')
+
+    const transparent = await chart.exportSVG({ background: null })
+    expect(rects(transparent).filter((r) => r.getAttribute('width') === '100%')).toHaveLength(0)
+  })
+
+  it('leaves out what only has a meaning on screen, and keeps the rest', async () => {
+    const { chart, line } = setup()
+    new D3PCursorIndicator({ bus }).addToChart(chart)
+    new D3PTooltip({ bus }).addToChart(chart)
+    await settle()
+    fire(el.querySelector('rect.interaction-area')!, 'mousemove', 160, 120, { buttons: 0 })
+    await settle()
+    await new Promise((r) => setTimeout(r, 300))
+    // what the pointer made is on screen...
+    expect(el.querySelector('.series-marker')).toBeTruthy()
+    expect(el.querySelector('.cursor-indicator')).toBeTruthy()
+    expect(el.querySelector('[data-d3pict-transient]')).toBeTruthy()
+    const svg = await chart.exportSVG()
+    // ...and not in the file
+    for (const left of ['interaction-area', 'cursor-indicator', 'cursor-labels', 'series-marker', 'data-d3pict-transient', 'layer-markers']) expect(svg, left).not.toContain(left)
+    // the chart is
+    expect(svg).toContain('class="line"')
+    expect(svg).toContain('x-axis')
+    expect(line.isDestroying).toBe(false)
+    expect(el.querySelector('.series-marker')).toBeTruthy() // the live chart is not touched
+  })
+
+  it('keeps the HTML parts of the chart: the titles and the legends', async () => {
+    const { chart } = setup()
+    new D3PTitle({ bus, props: { text: 'Exported title' } }).addToChart(chart)
+    await settle()
+    expect(await chart.exportSVG()).toContain('Exported title')
+  })
+
+  describe('as a PNG', () => {
+    const real = { Image: (globalThis as any).Image, getContext: HTMLCanvasElement.prototype.getContext, toDataURL: HTMLCanvasElement.prototype.toDataURL }
+    let sources: string[]
+    let sizes: [number, number][]
+    let taint = false
+    beforeEach(() => {
+      sources = []
+      sizes = []
+      taint = false
+      ;(globalThis as any).Image = class {
+        onload?: () => void
+        onerror?: () => void
+        set src(value: string) {
+          sources.push(value)
+          queueMicrotask(() => this.onload?.())
+        }
+      }
+      HTMLCanvasElement.prototype.getContext = (function (this: HTMLCanvasElement) {
+        return { drawImage: () => sizes.push([this.width, this.height]) }
+      }) as never
+      HTMLCanvasElement.prototype.toDataURL = function () {
+        // a canvas that held an image with HTML in it cannot be read back by some browsers
+        if (taint && decodeURIComponent(sources.at(-1)!).includes('foreignObject')) throw new DOMException('Tainted canvases may not be exported.', 'SecurityError')
+        return 'data:image/png;base64,AAAA'
+      }
+    })
+    afterEach(() => {
+      ;(globalThis as any).Image = real.Image
+      HTMLCanvasElement.prototype.getContext = real.getContext
+      HTMLCanvasElement.prototype.toDataURL = real.toDataURL
+    })
+
+    it('draws the svg, as a data URL, `scale` times bigger', async () => {
+      const { chart } = setup()
+      expect(await chart.exportPNG()).toBe('data:image/png;base64,AAAA')
+      expect(sizes.at(-1)).toEqual([800, 600]) // twice a chart of 400 x 300
+      await chart.exportPNG({ scale: 3 })
+      expect(sizes.at(-1)).toEqual([1200, 900])
+      expect(sources.at(-1)!.startsWith('data:image/svg+xml;charset=utf-8,')).toBe(true) // a blob URL would taint the canvas
+      expect(decodeURIComponent(sources.at(-1)!)).toContain('fill="#fff"')
+    })
+
+    it('draws the chart without its HTML when the browser would not let it be read back, and says so', async () => {
+      const { chart } = setup()
+      new D3PTitle({ bus, props: { text: 'Exported title' } }).addToChart(chart)
+      await settle()
+      taint = true
+      const warn = console.warn
+      const warned: string[] = []
+      console.warn = (m: string) => void warned.push(m)
+      try {
+        expect(await chart.exportPNG()).toBe('data:image/png;base64,AAAA')
+      } finally {
+        console.warn = warn
+      }
+      expect(sources).toHaveLength(2)
+      expect(decodeURIComponent(sources[0])).toContain('foreignObject')
+      expect(decodeURIComponent(sources[1])).not.toContain('foreignObject')
+      expect(warned).toHaveLength(1)
+      expect(warned[0]).toContain('exportSVG')
+    })
+
+    it('does not hang when the image cannot be loaded: it fails', async () => {
+      const { chart } = setup()
+      ;(globalThis as any).Image = class {
+        onerror?: () => void
+        set src(_: string) {
+          queueMicrotask(() => this.onerror?.())
+        }
+      }
+      await expect(chart.exportPNG()).rejects.toThrow('failed to load')
+    })
+  })
+
+  it('downloads under the name it is given', async () => {
+    const { chart } = setup()
+    const created: Blob[] = []
+    const real = { create: URL.createObjectURL, revoke: URL.revokeObjectURL, click: HTMLAnchorElement.prototype.click }
+    const downloads: string[] = []
+    URL.createObjectURL = ((blob: Blob) => (created.push(blob), 'blob:x')) as never
+    URL.revokeObjectURL = () => {}
+    HTMLAnchorElement.prototype.click = function () {
+      downloads.push(this.download)
+    }
+    try {
+      await chart.downloadSVG('my-chart.svg', { background: null })
+      await chart.downloadSVG()
+      expect(downloads).toEqual(['my-chart.svg', 'chart.svg'])
+      expect(created[0].type).toBe('image/svg+xml;charset=utf-8')
+      expect(await created[0].text()).not.toContain('fill="#fff"') // the options are passed on
+      expect(await created[1].text()).toContain('fill="#fff"')
+    } finally {
+      URL.createObjectURL = real.create
+      URL.revokeObjectURL = real.revoke
+      HTMLAnchorElement.prototype.click = real.click
+    }
   })
 })

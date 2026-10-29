@@ -4,7 +4,7 @@
  */
 /** Installs D3Pict in a Vue app: `app.use(D3PVPlugin)`. The app gets its own bus and render manager, which the components and the objects created in `setup` use. */
 export { D3PVPlugin } from './plugin'
-export { D3P_BUS_KEY, useD3PBus, type D3PAttachableLike } from './shared'
+export { D3P_BUS_KEY, useD3PBus, useD3PContext, type D3PAttachableLike } from './shared'
 /** Mounts a chart in a `div` and attaches `objects` to it. Props: `objects`, `width`, `height`, `margin`, `name`, `resizeDebounceMs`, `bus`. Emits `ready` with the chart. */
 export { default as D3PVChart } from './D3PVChart.vue'
 /** Shows a tooltip in HTML. Prop: `tooltip`. The default slot renders the content from `data` (a `D3PTooltipData`) and `chart`; without it, the standard content is used. */

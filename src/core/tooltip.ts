@@ -145,6 +145,7 @@ export interface D3PTooltipContainerOptions extends D3PHtmlContainerOptions {
 /** `foreignObject` hosting the tooltip content; positions it next to the point, clamped to the chart. */
 export class D3PTooltipContainer extends D3PHtmlContainer<D3PTooltipData> {
   protected readonly fullSvg = false
+  protected override readonly transient = true
   /** Distance of the box from the point, to its right, in pixels. */
   offsetX: number
   /** Distance of the box from the point, below it, in pixels. */

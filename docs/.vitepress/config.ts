@@ -14,7 +14,8 @@ const GUIDE = [
   ['chart-kinds', '8. Other kinds of chart', '8. Autres types de graphique'],
   ['polar', '9. Polar charts', '9. Graphiques polaires'],
   ['changing-data', '10. Change the data', '10. Changer les données'],
-  ['frameworks', '11. Vue and React', '11. Vue et React'],
+  ['export', '11. Export', '11. Export'],
+  ['frameworks', '12. Vue and React', '12. Vue et React'],
 ] as const
 const REFERENCE = [
   ['concepts', 'Concepts', 'Concepts'],
@@ -31,7 +32,7 @@ import { defineConfig, type DefaultTheme } from 'vitepress'
 const API: DefaultTheme.SidebarItem[] = existsSync('docs/api/typedoc-sidebar.json') ? JSON.parse(readFileSync('docs/api/typedoc-sidebar.json', 'utf8')) : []
 
 /** Navigation and sidebar of one language; `prefix` is '' for English and '/fr' for French. */
-function nav(prefix: string, lang: 'en' | 'fr', t: { guide: string; reference: string; examples: string; lines: string; tools: string; synced: string; polar: string; polarsync: string; axes: string; titles: string; many: string; data: string; pie: string; gallery: string; showcase: string; types: string }) {
+function nav(prefix: string, lang: 'en' | 'fr', t: { guide: string; reference: string; examples: string; lines: string; tools: string; synced: string; polar: string; polarsync: string; axes: string; titles: string; many: string; data: string; export: string; pie: string; gallery: string; showcase: string; types: string }) {
   const nav: DefaultTheme.NavItem[] = [
     { text: t.guide, link: `${prefix}/guide/getting-started` },
     { text: t.examples, link: `${prefix}/examples/lines` },
@@ -59,6 +60,7 @@ function nav(prefix: string, lang: 'en' | 'fr', t: { guide: string; reference: s
         { text: t.titles, link: `${prefix}/examples/titles` },
         { text: t.many, link: `${prefix}/examples/many` },
         { text: t.data, link: `${prefix}/examples/data` },
+        { text: t.export, link: `${prefix}/examples/export` },
         { text: t.synced, link: `${prefix}/examples/synced` },
         { text: t.polar, link: `${prefix}/examples/polar` },
         { text: t.polarsync, link: `${prefix}/examples/polarsync` },
@@ -86,22 +88,35 @@ export default defineConfig({
     ]
   },
   // the logo carries the name, so the title is not written next to it
-  themeConfig: { logo: '/logo.svg', siteTitle: false },
+  themeConfig: {
+    logo: '/logo.svg',
+    siteTitle: false,
+    socialLinks: [
+      { icon: 'github', link: 'https://github.com/hl037/d3pict.js', ariaLabel: 'D3Pict on GitHub' },
+      { icon: 'npm', link: 'https://www.npmjs.com/package/d3pict', ariaLabel: 'D3Pict on npm' },
+    ],
+    footer: { message: 'Released under the MIT license.', copyright: 'Copyright © 2026 Léo Flaventin Hauchecorne' },
+  },
   // English is the default language (served at the root); French lives under /fr/
   locales: {
     root: {
       label: 'English',
       lang: 'en-US',
-      description: 'Event-driven SVG charts built on d3.',
-      themeConfig: nav('', 'en', { guide: 'Guide', reference: 'Reference', examples: 'Examples', lines: 'Lines and areas', tools: 'Tools', synced: 'Synchronized charts', polar: 'Cartesian and polar', polarsync: 'Cartesian and polar, synchronized', axes: 'Several axes', titles: 'Titles and legend', many: 'Many series', data: 'Adding and removing data', pie: 'Pie and donut', gallery: 'Chart types', showcase: 'Showcase' }),
+      description: 'Depict your data: SVG charts built from objects, on top of d3. Interactive, animated, and yours to extend.',
+      themeConfig: nav('', 'en', { guide: 'Guide', reference: 'Reference', examples: 'Examples', lines: 'Lines and areas', tools: 'Tools', synced: 'Synchronized charts', polar: 'Cartesian and polar', polarsync: 'Cartesian and polar, synchronized', axes: 'Several axes', titles: 'Titles and legend', many: 'Many series', data: 'Adding and removing data', export: 'Export', pie: 'Pie and donut', gallery: 'Chart types', showcase: 'Showcase' }),
     },
     fr: {
       label: 'Français',
       lang: 'fr-FR',
       link: '/fr/',
-      description: 'Graphiques SVG pilotés par événements, construits sur d3.',
+      description: "Dépeignez vos données : des graphiques SVG assemblés à partir d'objets, au-dessus de d3. Interactifs, animés, faits pour être étendus.",
       themeConfig: {
-        ...nav('/fr', 'fr', { guide: 'Guide', reference: 'Référence', examples: 'Exemples', lines: 'Lignes et aires', tools: 'Outils', synced: 'Graphiques synchronisés', polar: 'Cartésien et polaire', polarsync: 'Cartésien et polaire, synchronisés', axes: 'Plusieurs axes', titles: 'Titres et légende', many: 'Beaucoup de séries', data: 'Ajouter et retirer des données', pie: 'Camembert et anneau', gallery: 'Types de graphiques', showcase: 'Vitrine' }),
+        ...nav('/fr', 'fr', { guide: 'Guide', reference: 'Référence', examples: 'Exemples', lines: 'Lignes et aires', tools: 'Outils', synced: 'Graphiques synchronisés', polar: 'Cartésien et polaire', polarsync: 'Cartésien et polaire, synchronisés', axes: 'Plusieurs axes', titles: 'Titres et légende', many: 'Beaucoup de séries', data: 'Ajouter et retirer des données', export: 'Export', pie: 'Camembert et anneau', gallery: 'Types de graphiques', showcase: 'Vitrine' }),
+        footer: { message: 'Publié sous licence MIT.', copyright: 'Copyright © 2026 Léo Flaventin Hauchecorne' },
+        socialLinks: [
+          { icon: 'github', link: 'https://github.com/hl037/d3pict.js', ariaLabel: 'D3Pict sur GitHub' },
+          { icon: 'npm', link: 'https://www.npmjs.com/package/d3pict', ariaLabel: 'D3Pict sur npm' },
+        ],
         outline: { label: 'Sur cette page' },
         docFooter: { prev: 'Page précédente', next: 'Page suivante' },
         sidebarMenuLabel: 'Menu',

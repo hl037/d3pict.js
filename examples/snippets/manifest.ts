@@ -6,7 +6,7 @@ function entry(id: string, name: string, extra: Partial<SnippetSource> = {}): Sn
 }
 
 /** The steps of the guide: one chart, a little more at each step. */
-export const GUIDE_STEPS = 10
+export const GUIDE_STEPS = 11
 
 export const SNIPPETS: Record<string, SnippetSource> = {
   lines: entry('lines', 'Lines'),
@@ -18,6 +18,7 @@ export const SNIPPETS: Record<string, SnippetSource> = {
   titles: entry('titles', 'Titles'),
   many: entry('many', 'Many'),
   data: entry('data', 'Data'),
+  export: entry('export', 'Export'),
   polarsync: entry('polarsync', 'PolarSync'),
   showcase: entry('showcase', 'Showcase'),
 }

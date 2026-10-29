@@ -8,7 +8,7 @@ const wait = (ms = 30) => new Promise((r) => setTimeout(r, ms))
 afterEach(() => (document.body.innerHTML = ''))
 
 const FRAMEWORKS: Framework[] = ['core', 'vue', 'react']
-const CHARTS: Record<string, number> = { lines: 1, tools: 1, synced: 2, polar: 1, pie: 1, gallery: 1, axes: 1, polarsync: 2, showcase: 7, titles: 1, many: 1, data: 1 }
+const CHARTS: Record<string, number> = { lines: 1, tools: 1, synced: 2, polar: 1, pie: 1, gallery: 1, axes: 1, polarsync: 2, showcase: 7, titles: 1, many: 1, data: 1, export: 1 }
 
 describe.each(examples.filter((e) => !e.hidden))('example $id', (example) => {
   it.each(FRAMEWORKS)('mounts and unmounts with %s', async (fw) => {
